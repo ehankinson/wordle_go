@@ -27,6 +27,25 @@ func init() {
 
 
 
+func reset_game_state() {
+	// Reset letter conditions
+	for i := 'a'; i <= 'z'; i++ {
+		letter := string(i)
+		LETTER_CONDITIONS[letter] = map[string]any{
+			"status":           nil,
+			"correct_position": nil,
+			"wrong_positions":  nil,
+            "double": nil,
+		}
+	}
+	// Reset final word
+	for i := range FINAL_WORD {
+		FINAL_WORD[i] = ""
+	}
+}
+
+
+
 func get_random_word(word_list []string) string {
 	return word_list[rand.Intn(len(word_list))]
 }
