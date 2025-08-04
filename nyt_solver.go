@@ -82,6 +82,7 @@ func play_single_game(reader *bufio.Reader) {
 			fmt.Print("Enter validation (or 'skip'): ")
 			input, _ := reader.ReadString('\n')
 			input = strings.TrimSpace(input)
+			// input := "bbbbb"
 
 			if input == "skip" {
 				fmt.Println("Removing word from dictionary...")
@@ -131,7 +132,82 @@ func play_single_game(reader *bufio.Reader) {
 
 
 
+func play_automated_game() {
+	reset_game_state()
+	word_list := Get_valide_words()
+	letter_frequency := Get_letter_frequency(word_list)
+	
+	reader := bufio.NewReader(os.Stdin)
+
+	for attempt := 1; attempt <= 6; attempt++ {
+		// Handle case where word doesn't exist
+		for {
+			best_word := Get_best_word(word_list, letter_frequency)
+			
+			// Output suggested word for Python to use
+			fmt.Printf("WORD:%s\n", best_word)
+			
+			// Wait for validation input from Python
+			input, err := reader.ReadString('\n')
+			if err != nil {
+				fmt.Printf("ERROR:Failed to read input\n")
+				return
+			}
+			input = strings.TrimSpace(input)
+
+			if input == "SKIP" {
+				word_list = remove_word(word_list, best_word)
+				letter_frequency = Get_letter_frequency(word_list)
+				continue
+			}
+
+			// Check if solved
+			if input == "ggggg" {
+				fmt.Printf("SOLVED:%s:%d\n", best_word, attempt)
+				return
+			}
+
+			// Validate input
+			if len(input) != 5 {
+				fmt.Printf("ERROR:Invalid input length\n")
+				continue
+			}
+
+			valid := true
+			for _, char := range input {
+				if char != 'g' && char != 'y' && char != 'b' {
+					fmt.Printf("ERROR:Invalid characters in input\n")
+					valid = false
+					break
+				}
+			}
+
+			if valid {
+				Update_letter_conditions(input, best_word)
+				word_list = Filter_word_list(word_list)
+				letter_frequency = Get_letter_frequency(word_list)
+				fmt.Printf("UPDATED:%d\n", len(word_list))
+				break
+			}
+		}
+
+		if len(word_list) == 0 {
+			fmt.Printf("ERROR:No more words available\n")
+			return
+		}
+	}
+
+	fmt.Printf("FAILED:Maximum attempts reached\n")
+}
+
 func main() {
+	// Check for automated mode
+	if len(os.Args) > 1 && os.Args[1] == "--auto" {
+		play_automated_game()
+		return
+	}
+
+	// Original interactive mode
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Println(ColorPurple + "Welcome to the NYT Wordle Solver!" + ColorReset)

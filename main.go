@@ -1,16 +1,17 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"math/rand"
 	"os"
+	"fmt"
+	"bufio"
 	"strings"
+	"math/rand"
 )
 
 const VALID_WORDS_PATH = "words/all_valid_words.txt"
 var LETTER_CONDITIONS = make(map[string]map[string]any)
 var FINAL_WORD = make([]string, 5)
+var KNOWN_LETTERS = []string{}
 
 func init() {
 	// Single letter checks
@@ -18,9 +19,9 @@ func init() {
 		letter := string(i)
 		LETTER_CONDITIONS[letter] = map[string]any{
 			"status":           nil,
-			"correct_position": nil,
-			"wrong_positions":  nil,
-            "double": nil,
+			"correct_position": []int{},
+			"wrong_positions":  []int{},
+            "double":           true,
 		}
 	}
 }
@@ -33,9 +34,9 @@ func reset_game_state() {
 		letter := string(i)
 		LETTER_CONDITIONS[letter] = map[string]any{
 			"status":           nil,
-			"correct_position": nil,
-			"wrong_positions":  nil,
-            "double": nil,
+			"correct_position": []int{},
+			"wrong_positions":  []int{},
+            "double":           true,
 		}
 	}
 	// Reset final word
@@ -88,6 +89,26 @@ func contains_number(number int, numbers []int) bool {
 
 
 
+func containes_letters(word string, known_letters []string) bool {
+	for _, know_letter := range known_letters {
+
+		in_word := false
+		for _, word_letter := range word {
+			if know_letter == string(word_letter) {
+				in_word = true
+			} 
+		}
+
+		if !in_word {
+			return false
+		}
+	}
+
+	return true
+}
+
+
+
 func nyt_word_validator(final_word string, guessed_word string) string {
 	nyt_string := []string{}
 	for i := 0; i < len(guessed_word); i++ {
@@ -116,10 +137,14 @@ func Update_letter_conditions(validation_string string, guessed_word string) {
             case 'g':
                 // If the letter is in the correct position
                 LETTER_CONDITIONS[letter_str]["status"] = true
-                LETTER_CONDITIONS[letter_str]["correct_position"] = i
+
+				positions := LETTER_CONDITIONS[letter_str]["correct_position"].([]int)
+				LETTER_CONDITIONS[letter_str]["correct_position"] = append(positions, i)
                 
                 // We will add this to the 'mock' final word to help us remove unwated words
                 FINAL_WORD[i] = letter_str
+				// Since we know that this letter is in the word, we should also remove all other words that don't include it
+				KNOWN_LETTERS = append(KNOWN_LETTERS, letter_str)
 
                 // If we have already seen the letter and it shouldn't be in the word
                 // That means that duplicates are no longer allowed
@@ -130,9 +155,7 @@ func Update_letter_conditions(validation_string string, guessed_word string) {
             case 'y':
                 // If the letter is in the word, but incorrect position
                 LETTER_CONDITIONS[letter_str]["status"] = true
-                if LETTER_CONDITIONS[letter_str]["wrong_positions"] == nil {
-                    LETTER_CONDITIONS[letter_str]["wrong_positions"] = make([]int, 0)
-                }
+                
                 positions := LETTER_CONDITIONS[letter_str]["wrong_positions"].([]int)
                 LETTER_CONDITIONS[letter_str]["wrong_positions"] = append(positions, i)
 
@@ -141,6 +164,9 @@ func Update_letter_conditions(validation_string string, guessed_word string) {
                 if contains_letter(letter_str, strings.Join(seen, "")) && !LETTER_CONDITIONS[letter_str]["status"].(bool) {
                     LETTER_CONDITIONS[letter_str]["double"] = false
                 }
+
+				// Since we know that this letter is in the word, we should also remove all other words that don't include it
+				KNOWN_LETTERS = append(KNOWN_LETTERS, letter_str)
 
             default:
                 // If we have already looked at the letter and the new is a 'b' that means there are no doubles, 
@@ -236,46 +262,48 @@ func Get_best_word(word_list []string, letter_frequency map[string]map[int]float
 func Filter_word_list(word_list []string) []string {
 	filtered_words := []string{}
 
-    for _, word := range word_list {
-        seen := []string{}
+    for _, word := range word_list {        
+		// when the FINAL_WORD is being built we should skip any word which does not follow the skeleton
+		skip := false
+
+		for i := 0; i < 5; i++ {
+			if FINAL_WORD[i] == "" { continue }
+
+			if FINAL_WORD[i] != string(word[i]) {
+				skip = true
+				break
+			} 
+		}
+
+		if skip { continue }
+		
+		
+		// The word does not contain one of the know letters in the word so we should skip
+		if len(KNOWN_LETTERS) > 0 && !containes_letters(word, KNOWN_LETTERS) {
+			continue
+		}
+
 		add := true
 
 		for pos, letter := range word {
 			letter_str := string(letter)
-
-            if FINAL_WORD[pos] != "" && FINAL_WORD[pos] != letter_str {
-                add = false
-                break
-            }
-			// If the letter is not in the word skip and don't add
-			if LETTER_CONDITIONS[letter_str]["status"] != nil && !LETTER_CONDITIONS[letter_str]["status"].(bool) {
-				add = false
-				break
-			}
-			// IF the letter is in the word, and we have the correct position, but its in the incorrect position skip and don't add
-			if LETTER_CONDITIONS[letter_str]["correct_position"] != nil && LETTER_CONDITIONS[letter_str]["correct_position"] != pos {
-				add = false
-				break
-			}
-			// If the letter is in the word, but we have the wrong position, and its the same we also skip and don't add
-			if LETTER_CONDITIONS[letter_str]["wrong_positions"] == nil {
-                seen = append(seen, letter_str)
+			
+			// We have no information on this letter so we should skip
+			if LETTER_CONDITIONS[letter_str]["status"] == nil {
 				continue
 			}
 
-			wrong_positions := LETTER_CONDITIONS[letter_str]["wrong_positions"].([]int)
-			if contains_number(pos, wrong_positions) {
+			if !LETTER_CONDITIONS[letter_str]["status"].(bool) {
 				add = false
 				break
-            }
+			}
 
-            // If we have already seen the letter, and doubles are false we need to skip the word
-            if contains_letter(letter_str, strings.Join(seen, "")) {
-                add = false
-                break
-            }
-
-            seen = append(seen, letter_str)
+			wrong_positions := LETTER_CONDITIONS[letter_str]["wrong_positions"].([]int)
+			// When the current position is in the wrong_positions we should skip
+			if len(wrong_positions) > 0 && contains_number(pos, wrong_positions) {
+				add = false
+				break
+			}
 		}
 
 		if add {
