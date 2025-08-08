@@ -15,7 +15,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 
 # Number of games to play consecutively
-GAMES_TO_PLAY = 100
+GAMES_TO_PLAY = 10
 
 class WordlyWebPlayer:
     def __init__(self, wordly_url="https://wordly.org/"):
@@ -45,7 +45,7 @@ class WordlyWebPlayer:
         """Start the Go solver in automated mode"""
         try:
             self.go_process = subprocess.Popen(
-                ['./wordle_solver', '--auto'],
+                ['./bin/wordle_solver', '--auto'],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -105,7 +105,7 @@ class WordlyWebPlayer:
             
             # Start a new Go solver process
             self.go_process = subprocess.Popen(
-                ['./wordle_solver', '--auto'],
+                ['./bin/wordle_solver', '--auto'],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -422,7 +422,7 @@ class WordlyWebPlayer:
             self.driver.quit()
 
 def main():
-    with open('wordly_results.json', 'r') as f:
+    with open('data/wordly_results.json', 'r') as f:
         results = json.load(f)
 
     player = WordlyWebPlayer()
@@ -433,7 +433,7 @@ def main():
     else:
         print("\nGame failed to complete.")
     
-    with open('wordly_results.json', 'w') as f:
+    with open('data/wordly_results.json', 'w') as f:
         json.dump(results, f, indent=4)
 
 if __name__ == "__main__":
