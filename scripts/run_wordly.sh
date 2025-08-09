@@ -11,6 +11,6 @@ fi
 
 # Run the Wordly web player
 echo "Starting Wordly web player..."
-python3 src/python/wordly_web_player.py
+python3 src/python/wordly.py
 
 echo "Done!"

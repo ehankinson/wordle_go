@@ -11,6 +11,6 @@ fi
 
 # Run the Wordle web player
 echo "Starting Wordle web player..."
-python3 src/python/wordle_web_player.py
+python3 src/python/wordle.py
 
 echo "Done!"
