@@ -9,6 +9,7 @@ import (
 )
 
 const VALID_WORDS_PATH = "words/all_valid_words.txt"
+
 var LETTER_CONDITIONS = make(map[string]map[string]any)
 var FINAL_WORD = make([]string, 5)
 var KNOWN_LETTERS = []string{}
@@ -21,14 +22,14 @@ func init() {
 			"status":           nil,
 			"correct_position": []int{},
 			"wrong_positions":  []int{},
-            "double":           true,
+			"double":           true,
 		}
 	}
 }
 
 
 
-func reset_game_state() {
+func Reset_game_state() {
 	// Reset letter conditions
 	for i := 'a'; i <= 'z'; i++ {
 		letter := string(i)
@@ -36,18 +37,20 @@ func reset_game_state() {
 			"status":           nil,
 			"correct_position": []int{},
 			"wrong_positions":  []int{},
-            "double":           true,
+			"double":           true,
 		}
 	}
 	// Reset final word
 	for i := range FINAL_WORD {
 		FINAL_WORD[i] = ""
 	}
+	// Reset known letters
+	KNOWN_LETTERS = []string{}
 }
 
 
 
-func get_random_word(word_list []string) string {
+func Get_random_word(word_list []string) string {
 	return word_list[rand.Intn(len(word_list))]
 }
 
@@ -65,26 +68,26 @@ func contains_letter(letter string, word string) bool {
 
 
 func count_letters(letter string, letters string) int {
-    count := 0
-    for _, l := range letters {
-        if string(l) == letter {
-            count++
-        }
-    }
+	count := 0
+	for _, l := range letters {
+		if string(l) == letter {
+			count++
+		}
+	}
 
-    return count
+	return count
 }
 
 
 
 func contains_number(number int, numbers []int) bool {
-    for _, item := range numbers {
-        if number == item {
-            return true
-        }
-    }
+	for _, item := range numbers {
+		if number == item {
+			return true
+		}
+	}
 
-    return false
+	return false
 }
 
 
@@ -96,7 +99,7 @@ func containes_letters(word string, known_letters []string) bool {
 		for _, word_letter := range word {
 			if know_letter == string(word_letter) {
 				in_word = true
-			} 
+			}
 		}
 
 		if !in_word {
@@ -109,7 +112,7 @@ func containes_letters(word string, known_letters []string) bool {
 
 
 
-func nyt_word_validator(final_word string, guessed_word string) string {
+func Nyt_word_validator(final_word string, guessed_word string) string {
 	nyt_string := []string{}
 	for i := 0; i < len(guessed_word); i++ {
 		// If the letter is in the correct position
@@ -129,58 +132,58 @@ func nyt_word_validator(final_word string, guessed_word string) string {
 
 
 func Update_letter_conditions(validation_string string, guessed_word string) {
-    seen := []string{}
+	seen := []string{}
 	for i := 0; i < len(guessed_word); i++ {
 		letter_str := string(guessed_word[i])
 
 		switch validation_string[i] {
-            case 'g':
-                // If the letter is in the correct position
-                LETTER_CONDITIONS[letter_str]["status"] = true
+		case 'g':
+			// If the letter is in the correct position
+			LETTER_CONDITIONS[letter_str]["status"] = true
 
-				positions := LETTER_CONDITIONS[letter_str]["correct_position"].([]int)
-				LETTER_CONDITIONS[letter_str]["correct_position"] = append(positions, i)
-                
-                // We will add this to the 'mock' final word to help us remove unwated words
-                FINAL_WORD[i] = letter_str
-				// Since we know that this letter is in the word, we should also remove all other words that don't include it
-				KNOWN_LETTERS = append(KNOWN_LETTERS, letter_str)
+			positions := LETTER_CONDITIONS[letter_str]["correct_position"].([]int)
+			LETTER_CONDITIONS[letter_str]["correct_position"] = append(positions, i)
 
-                // If we have already seen the letter and it shouldn't be in the word
-                // That means that duplicates are no longer allowed
-                if contains_letter(letter_str, strings.Join(seen, "")) && !LETTER_CONDITIONS[letter_str]["status"].(bool) {
-                    LETTER_CONDITIONS[letter_str]["double"] = false
-                }
+			// We will add this to the 'mock' final word to help us remove unwated words
+			FINAL_WORD[i] = letter_str
+			// Since we know that this letter is in the word, we should also remove all other words that don't include it
+			KNOWN_LETTERS = append(KNOWN_LETTERS, letter_str)
 
-            case 'y':
-                // If the letter is in the word, but incorrect position
-                LETTER_CONDITIONS[letter_str]["status"] = true
-                
-                positions := LETTER_CONDITIONS[letter_str]["wrong_positions"].([]int)
-                LETTER_CONDITIONS[letter_str]["wrong_positions"] = append(positions, i)
+			// If we have already seen the letter and it shouldn't be in the word
+			// That means that duplicates are no longer allowed
+			if contains_letter(letter_str, strings.Join(seen, "")) && !LETTER_CONDITIONS[letter_str]["status"].(bool) {
+				LETTER_CONDITIONS[letter_str]["double"] = false
+			}
 
-                // If we have already seen the letter and it shouldn't be in the word
-                // That means that duplicates are no longer allowed
-                if contains_letter(letter_str, strings.Join(seen, "")) && !LETTER_CONDITIONS[letter_str]["status"].(bool) {
-                    LETTER_CONDITIONS[letter_str]["double"] = false
-                }
+		case 'y':
+			// If the letter is in the word, but incorrect position
+			LETTER_CONDITIONS[letter_str]["status"] = true
 
-				// Since we know that this letter is in the word, we should also remove all other words that don't include it
-				KNOWN_LETTERS = append(KNOWN_LETTERS, letter_str)
+			positions := LETTER_CONDITIONS[letter_str]["wrong_positions"].([]int)
+			LETTER_CONDITIONS[letter_str]["wrong_positions"] = append(positions, i)
 
-            default:
-                // If we have already looked at the letter and the new is a 'b' that means there are no doubles, 
-                // but could still be possible for that letter to be in the word
-                if contains_letter(letter_str, strings.Join(seen, "")) {
-                    LETTER_CONDITIONS[letter_str]["double"] = false
-                
-                // Letter is not in the word
-                } else {
-                    LETTER_CONDITIONS[letter_str]["status"] = false
-                }       
+			// If we have already seen the letter and it shouldn't be in the word
+			// That means that duplicates are no longer allowed
+			if contains_letter(letter_str, strings.Join(seen, "")) && !LETTER_CONDITIONS[letter_str]["status"].(bool) {
+				LETTER_CONDITIONS[letter_str]["double"] = false
+			}
+
+			// Since we know that this letter is in the word, we should also remove all other words that don't include it
+			KNOWN_LETTERS = append(KNOWN_LETTERS, letter_str)
+
+		default:
+			// If we have already looked at the letter and the new is a 'b' that means there are no doubles,
+			// but could still be possible for that letter to be in the word
+			if contains_letter(letter_str, strings.Join(seen, "")) {
+				LETTER_CONDITIONS[letter_str]["double"] = false
+
+				// Letter is not in the word
+			} else {
+				LETTER_CONDITIONS[letter_str]["status"] = false
+			}
 		}
 
-        seen = append(seen, letter_str)
+		seen = append(seen, letter_str)
 	}
 }
 
@@ -203,8 +206,7 @@ func Get_valide_words() []string {
 }
 
 
-
-func Get_letter_frequency(word_list []string) map[string]map[int]float64 {
+func make_letter_dict(word_list []string) map[string]map[int]float64 {
 	letter_count := make(map[string]map[int]float64)
 	for _, word := range word_list {
 		for i := 0; i < 5; i++ {
@@ -215,6 +217,14 @@ func Get_letter_frequency(word_list []string) map[string]map[int]float64 {
 			letter_count[single][i]++
 		}
 	}
+
+	return letter_count
+}
+
+
+
+func Get_letter_frequency(word_list []string) map[string]map[int]float64 {
+	letter_count := make_letter_dict(word_list)
 
 	total_letter := len(letter_count)
 	letter_frequency := make(map[string]map[int]float64)
@@ -229,18 +239,48 @@ func Get_letter_frequency(word_list []string) map[string]map[int]float64 {
 }
 
 
+func letter_filter(word_list[]string) map[string]map[int]float64 {
+	letter_count := make_letter_dict(word_list)
+	letter_frequency := make(map[string]map[int]float64)
 
-func Get_best_word(word_list []string, letter_frequency map[string]map[int]float64) string {
+	for letter, positions := range letter_count {
+		letter_frequency[letter] = make(map[int]float64)
+		known_letter := contains_letter(letter, strings.Join(KNOWN_LETTERS, ""))
+		for position, count := range positions {
+			if known_letter || LETTER_CONDITIONS[letter]["status"] == nil || !LETTER_CONDITIONS[letter]["status"].(bool) {
+				letter_frequency[letter][position] = 0.0
+				continue
+			}
+			letter_frequency[letter][position] = float64(count) / float64(len(word_list))
+		}
+	}
+
+	return letter_frequency
+}
+
+
+
+func Get_best_word(word_list []string) string {
+	// If the word list is less than 1000 words and known letters is less then 4,
+	// we should use letters that are unknow to filter out letter
+	var letter_frequency map[string]map[int]float64
+
+	if len(word_list) < 1000 && len(KNOWN_LETTERS) < 4 {
+		letter_frequency = letter_filter(word_list)
+	} else {
+		letter_frequency = Get_letter_frequency(word_list)
+	}
+
 	word_probabilities := map[string]float64{}
 	for _, word := range word_list {
-    
-        var prob float64 = 0.0
 
-        for i, l := range word {
-            letter_str := string(l)
-            count := count_letters(letter_str, word)
-            prob += letter_frequency[letter_str][i] / float64(count)
-        }
+		var prob float64 = 0.0
+
+		for i, l := range word {
+			letter_str := string(l)
+			count := count_letters(letter_str, word)
+			prob += letter_frequency[letter_str][i] / float64(count)
+		}
 
 		word_probabilities[word] = prob
 	}
@@ -262,22 +302,25 @@ func Get_best_word(word_list []string, letter_frequency map[string]map[int]float
 func Filter_word_list(word_list []string) []string {
 	filtered_words := []string{}
 
-    for _, word := range word_list {        
+	for _, word := range word_list {
 		// when the FINAL_WORD is being built we should skip any word which does not follow the skeleton
 		skip := false
 
 		for i := 0; i < 5; i++ {
-			if FINAL_WORD[i] == "" { continue }
+			if FINAL_WORD[i] == "" {
+				continue
+			}
 
 			if FINAL_WORD[i] != string(word[i]) {
 				skip = true
 				break
-			} 
+			}
 		}
 
-		if skip { continue }
-		
-		
+		if skip {
+			continue
+		}
+
 		// The word does not contain one of the know letters in the word so we should skip
 		if len(KNOWN_LETTERS) > 0 && !containes_letters(word, KNOWN_LETTERS) {
 			continue
@@ -287,7 +330,7 @@ func Filter_word_list(word_list []string) []string {
 
 		for pos, letter := range word {
 			letter_str := string(letter)
-			
+
 			// We have no information on this letter so we should skip
 			if LETTER_CONDITIONS[letter_str]["status"] == nil {
 				continue
