@@ -223,7 +223,7 @@ func make_letter_dict(word_list []string) map[string]map[int]float64 {
 
 
 
-func Get_letter_frequency(word_list []string) map[string]map[int]float64 {
+func get_letter_frequency(word_list []string) map[string]map[int]float64 {
 	letter_count := make_letter_dict(word_list)
 
 	total_letter := len(letter_count)
@@ -239,15 +239,73 @@ func Get_letter_frequency(word_list []string) map[string]map[int]float64 {
 }
 
 
-func letter_filter(word_list[]string) map[string]map[int]float64 {
+
+func get_remaning_letters(word_list []string) map[string]bool {
+	letters := make(map[string]bool)
+	for _, word := range word_list {
+		for _, letter := range word {
+			letter_str := string(letter)
+			if LETTER_CONDITIONS[letter_str]["status"] == nil && !letters[letter_str]{
+				letters[letter_str] = true
+			}
+		}
+	}
+	
+	return letters
+}
+
+
+
+func best_common_letters_word(letters map[string]bool) string {
+	all_words := Get_valide_words()
+	max_count := 0
+	best_word := ""
+
+	keys := make([]string, 0, len(letters))
+	for letter := range letters {
+		keys = append(keys, letter)
+	}
+	keys_str := strings.Join(keys, "")
+
+	for _, word := range all_words {
+		count := 0
+		for _, letter := range word {
+			letter_str := string(letter)
+
+			if contains_letter(letter_str, keys_str) {
+				count++
+			}
+		}
+
+		if count > max_count {
+			max_count = count
+			best_word = word
+		}
+	}
+
+	return best_word
+}
+
+
+
+func letter_filter(word_list []string) map[string]map[int]float64 {
 	letter_count := make_letter_dict(word_list)
 	letter_frequency := make(map[string]map[int]float64)
 
 	for letter, positions := range letter_count {
 		letter_frequency[letter] = make(map[int]float64)
+
+		// If the letter is in the known letters, or the letter is not in the word, we need to skip them,
+		// since we want the best word with the most common letters that have not been used to filter out more letters
 		known_letter := contains_letter(letter, strings.Join(KNOWN_LETTERS, ""))
+		var good_letter bool = false
+
+		if LETTER_CONDITIONS[letter]["status"] == nil {
+			good_letter = true
+		}
+
 		for position, count := range positions {
-			if known_letter || LETTER_CONDITIONS[letter]["status"] == nil || !LETTER_CONDITIONS[letter]["status"].(bool) {
+			if known_letter || !good_letter {
 				letter_frequency[letter][position] = 0.0
 				continue
 			}
@@ -260,22 +318,12 @@ func letter_filter(word_list[]string) map[string]map[int]float64 {
 
 
 
-func Get_best_word(word_list []string) string {
-	// If the word list is less than 1000 words and known letters is less then 4,
-	// we should use letters that are unknow to filter out letter
-	var letter_frequency map[string]map[int]float64
-
-	if len(word_list) < 1000 && len(KNOWN_LETTERS) < 4 {
-		letter_frequency = letter_filter(word_list)
-	} else {
-		letter_frequency = Get_letter_frequency(word_list)
-	}
-
+func word_probabilities(letter_frequency map[string]map[int]float64, word_list []string) map[string]float64 {
 	word_probabilities := map[string]float64{}
+
 	for _, word := range word_list {
 
 		var prob float64 = 0.0
-
 		for i, l := range word {
 			letter_str := string(l)
 			count := count_letters(letter_str, word)
@@ -283,6 +331,43 @@ func Get_best_word(word_list []string) string {
 		}
 
 		word_probabilities[word] = prob
+	}
+
+	return word_probabilities
+}
+
+
+
+func best_filter_word_probabilities() map[string]float64 {
+	all_words := Get_valide_words()
+	letter_frequency := letter_filter(all_words)
+	word_probabilities := word_probabilities(letter_frequency, all_words)
+	return word_probabilities
+}
+
+
+
+func best_word_probabilities(word_list []string) map[string]float64 {
+	letter_frequency := get_letter_frequency(word_list)
+	word_probabilities := word_probabilities(letter_frequency, word_list)
+	return word_probabilities
+}
+
+
+
+func Get_best_word(word_list []string) string {
+	// If the word list is less than 1000 words and known letters is less then 4,
+	// we should use letters that are unknow to filter out letter
+	var word_probabilities map[string]float64
+
+	if len(word_list) < 100 {
+		letters := get_remaning_letters(word_list)
+		best_word := best_common_letters_word(letters)
+		return best_word
+	} else if len(word_list) < 1000 && len(KNOWN_LETTERS) < 4 {
+		word_probabilities = best_filter_word_probabilities()
+	} else {
+		word_probabilities = best_word_probabilities(word_list)
 	}
 
 	best_word := ""
