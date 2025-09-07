@@ -1,0 +1,323 @@
+{
+    "game_id": "game_00001",
+    "target_word": "CRANE",
+    "total_attempts": 3,
+    "success": true,
+    "timestamp": "2024-01-15T10:30:00Z",
+    "generation_params": {
+      "temperature": 0.8,
+      "top_k": 10,
+      "starting_word_strategy": "top_10_random"
+    },
+    "experiences": [
+      {
+        "step": 0,
+        "state": {
+          "attempt_number": 0,
+          "board_state": [
+            ["", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""]
+          ],
+          "letter_constraints": {
+            "correct_positions": {},
+            "present_letters": [],
+            "absent_letters": [],
+            "position_constraints": {
+              "0": {"must_not_be": []},
+              "1": {"must_not_be": []},
+              "2": {"must_not_be": []},
+              "3": {"must_not_be": []},
+              "4": {"must_not_be": []}
+            }
+          },
+          "valid_words_remaining": 12972,
+          "entropy": 10.67,
+          "previous_guesses": [],
+          "previous_feedback": []
+        },
+        "action": {
+          "word": "SLATE",
+          "word_index": 8743,
+          "selection_method": "top_k_sample",
+          "rank_in_candidates": 1,
+          "probability_score": 0.892
+        },
+        "feedback": {
+          "raw": "bbybb",
+          "colors": ["black", "black", "yellow", "black", "black"],
+          "letter_results": {
+            "S": "absent",
+            "L": "absent", 
+            "A": "present",
+            "T": "absent",
+            "E": "absent"
+          }
+        },
+        "next_state": {
+          "attempt_number": 1,
+          "board_state": [
+            ["S", "L", "A", "T", "E"],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""]
+          ],
+          "letter_constraints": {
+            "correct_positions": {},
+            "present_letters": ["A"],
+            "absent_letters": ["S", "L", "T", "E"],
+            "position_constraints": {
+              "0": {"must_not_be": []},
+              "1": {"must_not_be": []},
+              "2": {"must_not_be": ["A"]},
+              "3": {"must_not_be": []},
+              "4": {"must_not_be": []}
+            }
+          },
+          "valid_words_remaining": 183,
+          "entropy": 6.52,
+          "previous_guesses": ["SLATE"],
+          "previous_feedback": ["bbybb"]
+        },
+        "reward": {
+          "immediate": -1,
+          "shaping": 0.3,
+          "total": -0.7,
+          "components": {
+            "guess_penalty": -1,
+            "information_gain": 0.2,
+            "new_yellow_letters": 0.1,
+            "valid_words_reduction_bonus": 0.0
+          }
+        },
+        "done": false,
+        "info": {
+          "words_eliminated": 12789,
+          "information_gained": 4.15,
+          "new_constraints_added": 5
+        }
+      },
+      {
+        "step": 1,
+        "state": {
+          "attempt_number": 1,
+          "board_state": [
+            ["S", "L", "A", "T", "E"],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""]
+          ],
+          "letter_constraints": {
+            "correct_positions": {},
+            "present_letters": ["A"],
+            "absent_letters": ["S", "L", "T", "E"],
+            "position_constraints": {
+              "0": {"must_not_be": []},
+              "1": {"must_not_be": []},
+              "2": {"must_not_be": ["A"]},
+              "3": {"must_not_be": []},
+              "4": {"must_not_be": []}
+            }
+          },
+          "valid_words_remaining": 183,
+          "entropy": 6.52,
+          "previous_guesses": ["SLATE"],
+          "previous_feedback": ["bbybb"]
+        },
+        "action": {
+          "word": "BRAND",
+          "word_index": 1247,
+          "selection_method": "top_k_sample",
+          "rank_in_candidates": 3,
+          "probability_score": 0.763
+        },
+        "feedback": {
+          "raw": "bgggy",
+          "colors": ["black", "green", "green", "green", "black"],
+          "letter_results": {
+            "B": "absent",
+            "R": "correct",
+            "A": "correct",
+            "N": "correct",
+            "D": "absent"
+          }
+        },
+        "next_state": {
+          "attempt_number": 2,
+          "board_state": [
+            ["S", "L", "A", "T", "E"],
+            ["B", "R", "A", "N", "D"],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""]
+          ],
+          "letter_constraints": {
+            "correct_positions": {
+              "1": "R",
+              "2": "A", 
+              "3": "N"
+            },
+            "present_letters": ["R", "A", "N"],
+            "absent_letters": ["S", "L", "T", "E", "B", "D"],
+            "position_constraints": {
+              "0": {"must_not_be": []},
+              "1": {"must_not_be": []},
+              "2": {"must_not_be": []},
+              "3": {"must_not_be": []},
+              "4": {"must_not_be": []}
+            }
+          },
+          "valid_words_remaining": 4,
+          "entropy": 2.0,
+          "previous_guesses": ["SLATE", "BRAND"],
+          "previous_feedback": ["bbybb", "bgggy"]
+        },
+        "reward": {
+          "immediate": -1,
+          "shaping": 1.5,
+          "total": 0.5,
+          "components": {
+            "guess_penalty": -1,
+            "information_gain": 0.8,
+            "new_green_letters": 1.5,
+            "new_yellow_letters": 0.0,
+            "valid_words_reduction_bonus": 0.2
+          }
+        },
+        "done": false,
+        "info": {
+          "words_eliminated": 179,
+          "information_gained": 4.52,
+          "new_constraints_added": 3,
+          "possible_words": ["CRANE", "FRANK", "GRANT", "PRANK"]
+        }
+      },
+      {
+        "step": 2,
+        "state": {
+          "attempt_number": 2,
+          "board_state": [
+            ["S", "L", "A", "T", "E"],
+            ["B", "R", "A", "N", "D"],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""]
+          ],
+          "letter_constraints": {
+            "correct_positions": {
+              "1": "R",
+              "2": "A",
+              "3": "N"
+            },
+            "present_letters": ["R", "A", "N"],
+            "absent_letters": ["S", "L", "T", "E", "B", "D"],
+            "position_constraints": {
+              "0": {"must_not_be": []},
+              "1": {"must_not_be": []},
+              "2": {"must_not_be": []},
+              "3": {"must_not_be": []},
+              "4": {"must_not_be": []}
+            }
+          },
+          "valid_words_remaining": 4,
+          "entropy": 2.0,
+          "previous_guesses": ["SLATE", "BRAND"],
+          "previous_feedback": ["bbybb", "bgggy"]
+        },
+        "action": {
+          "word": "CRANE",
+          "word_index": 2341,
+          "selection_method": "top_k_sample",
+          "rank_in_candidates": 1,
+          "probability_score": 0.445
+        },
+        "feedback": {
+          "raw": "ggggg",
+          "colors": ["green", "green", "green", "green", "green"],
+          "letter_results": {
+            "C": "correct",
+            "R": "correct",
+            "A": "correct",
+            "N": "correct",
+            "E": "correct"
+          }
+        },
+        "next_state": {
+          "attempt_number": 3,
+          "board_state": [
+            ["S", "L", "A", "T", "E"],
+            ["B", "R", "A", "N", "D"],
+            ["C", "R", "A", "N", "E"],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", ""]
+          ],
+          "letter_constraints": {
+            "correct_positions": {
+              "0": "C",
+              "1": "R",
+              "2": "A",
+              "3": "N",
+              "4": "E"
+            },
+            "present_letters": ["C", "R", "A", "N", "E"],
+            "absent_letters": ["S", "L", "T", "B", "D"],
+            "position_constraints": {
+              "0": {"must_not_be": []},
+              "1": {"must_not_be": []},
+              "2": {"must_not_be": []},
+              "3": {"must_not_be": []},
+              "4": {"must_not_be": []}
+            }
+          },
+          "valid_words_remaining": 1,
+          "entropy": 0,
+          "previous_guesses": ["SLATE", "BRAND", "CRANE"],
+          "previous_feedback": ["bbybb", "bgggy", "ggggg"]
+        },
+        "reward": {
+          "immediate": 10,
+          "shaping": 0,
+          "total": 10,
+          "components": {
+            "win_bonus": 10,
+            "attempt_bonus": 4,
+            "guess_penalty": -3,
+            "efficiency_bonus": 3
+          }
+        },
+        "done": true,
+        "info": {
+          "game_won": true,
+          "attempts_used": 3,
+          "optimal_path": false,
+          "difficulty_score": 0.72
+        }
+      }
+    ],
+    "summary": {
+      "total_reward": 9.8,
+      "guesses": ["SLATE", "BRAND", "CRANE"],
+      "feedback_sequence": ["bbybb", "bgggy", "ggggg"],
+      "information_gain_per_guess": [4.15, 4.52, 2.0],
+      "strategy_type": "information_theory",
+      "word_elimination_pattern": [12789, 179, 3],
+      "luck_factor": 0.3
+    },
+    "metadata": {
+      "solver_version": "1.0.0",
+      "word_list_version": "nyt_2024",
+      "difficulty_rating": "medium",
+      "common_word": true,
+      "letter_frequency_rank": 127
+    }
+  }
