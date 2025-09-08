@@ -19,42 +19,6 @@ var WORDLE_ATTEMPTS = 6
 var STARTING_WORDS = get_valide_words()
 var DATA_FILE = filepath.Join(current_dir, "..", "..", "data", "trainning_set.json")
 
-type Strategy int
-
-const (
-	EXPLOIT Strategy = iota
-	EXPLORE
-	RANDOM
-)
-
-type ExplorationData struct {
-	Temp     float64
-	TopK     int
-	Strategy Strategy
-}
-
-type Experience struct {
-	State    State   `json:"state"`
-	Action   string  `json:"action"`
-	Feedback string  `json:"feedback"`
-	Reward   float64 `json:"reward"`
-	Done     bool    `json:"done"`
-}
-
-type State struct {
-	AttemptNum         int               `json:"attempt_number"`
-	LetterContraints   LetterConstraints `json:"letter_constraints"`
-	ValidWordsRemaning int               `json:"valid_words_remaining"`
-	PreviousGuesses    []string          `json:"previous_guesses"`
-	PreviousFeedback   []string          `json:"previous_feedback"`
-}
-
-type LetterConstraints struct {
-	CorrectPositions []string `json:"correct_positions"`
-	PresentLetters   []string `json:"present_letters"`
-	AbsentLetters    []string `json:"absent_letters"`
-}
-
 func main() {
 	err := generate_data(NUM_GAMES)
 	if err != nil {
@@ -70,19 +34,19 @@ func get_explration_params() ExplorationData {
 
 	if r < 0.4 {
 		return ExplorationData{
-			Temp:     0.3 + rand.Float64()*0.3,
+			Temp:     0.3 + rand.Float64() * 0.3,
 			TopK:     5 + rand.Intn(5),
 			Strategy: EXPLOIT,
 		}
 	} else if r < 0.8 {
 		return ExplorationData{
-			Temp:     0.7 + rand.Float64()*0.5,
+			Temp:     0.7 + rand.Float64() * 0.5,
 			TopK:     10 + rand.Intn(10),
 			Strategy: EXPLORE,
 		}
 	} else {
 		return ExplorationData{
-			Temp:     1.2 + rand.Float64()*0.8,
+			Temp:     1.2 + rand.Float64() * 0.8,
 			TopK:     30 + rand.Intn(70),
 			Strategy: RANDOM,
 		}
@@ -225,7 +189,7 @@ func generate_data(num_games int) error {
 			is_final := is_winner || att == WORDLE_ATTEMPTS-1
 
 			reward := calculate_reward(
-				att+1,
+				att + 1,
 				words_before,
 				words_after,
 				validation_string,
