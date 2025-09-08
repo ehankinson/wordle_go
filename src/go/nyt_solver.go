@@ -1,9 +1,12 @@
+//go:build !generate
+// +build !generate
+
 package main
 
 import (
-	"os"
-	"fmt"
 	"bufio"
+	"fmt"
+	"os"
 	"strings"
 )
 
@@ -18,7 +21,7 @@ const (
 	ColorCyan   = "\033[36m"
 	ColorWhite  = "\033[37m"
 	ColorBlack  = "\033[30m"
-	
+
 	// Background colors for better visibility
 	BgGreen  = "\033[42m"
 	BgYellow = "\033[43m"
@@ -58,12 +61,10 @@ func remove_word(word_list []string, word string) []string {
 	return result
 }
 
-
-
 func play_single_game(reader *bufio.Reader) {
 	reset_game_state()
-	word_list := Get_valide_words()
-	letter_frequency := Get_letter_frequency(word_list)
+	word_list := get_valide_words()
+	letter_frequency := get_letter_frequency(word_list)
 
 	fmt.Println(ColorCyan + "\n=== Starting New Wordle Game ===" + ColorReset)
 	fmt.Println("Enter validation string: " + BgGreen + ColorWhite + " g " + ColorReset + " = green (correct), " + BgYellow + ColorBlack + " y " + ColorReset + " = yellow (wrong position), " + BgBlack + ColorWhite + " b " + ColorReset + " = black (not in word)")
@@ -71,13 +72,13 @@ func play_single_game(reader *bufio.Reader) {
 	fmt.Println(ColorGreen + "Type 'ggggg' when you solve the puzzle" + ColorReset)
 
 	for attempt := 1; attempt <= 6; attempt++ {
-		fmt.Printf(ColorPurple + "\n--- Attempt %d/6 ---\n" + ColorReset, attempt)
-		fmt.Printf(ColorBlue + "Words remaining: %d\n" + ColorReset, len(word_list))
+		fmt.Printf(ColorPurple+"\n--- Attempt %d/6 ---\n"+ColorReset, attempt)
+		fmt.Printf(ColorBlue+"Words remaining: %d\n"+ColorReset, len(word_list))
 
 		// Handle case where word doesn't exist
 		for {
-			best_word := Get_best_word(word_list, letter_frequency)
-			fmt.Printf(ColorCyan + "Suggested word: " + ColorWhite + "%s" + ColorReset + "\n", best_word)
+			best_word := get_best_word(word_list, letter_frequency)
+			fmt.Printf(ColorCyan+"Suggested word: "+ColorWhite+"%s"+ColorReset+"\n", best_word)
 
 			fmt.Print("Enter validation (or 'skip'): ")
 			input, _ := reader.ReadString('\n')
@@ -87,13 +88,13 @@ func play_single_game(reader *bufio.Reader) {
 			if input == "skip" {
 				fmt.Println("Removing word from dictionary...")
 				word_list = remove_word(word_list, best_word)
-				letter_frequency = Get_letter_frequency(word_list)
+				letter_frequency = get_letter_frequency(word_list)
 				continue
 			}
 
 			// Check if solved
 			if input == "ggggg" {
-				fmt.Printf(ColorGreen + "\n🎉 Congratulations! You solved it with '%s' in %d attempts!\n" + ColorReset, best_word, attempt)
+				fmt.Printf(ColorGreen+"\n🎉 Congratulations! You solved it with '%s' in %d attempts!\n"+ColorReset, best_word, attempt)
 				return
 			}
 
@@ -114,9 +115,9 @@ func play_single_game(reader *bufio.Reader) {
 
 			if valid {
 				fmt.Printf("Result: %s\n", display_colored_word(best_word, input))
-				Update_letter_conditions(input, best_word)
-				word_list = Filter_word_list(word_list)
-				letter_frequency = Get_letter_frequency(word_list)
+				update_letter_conditions(input, best_word)
+				word_list = filter_word_list(word_list)
+				letter_frequency = get_letter_frequency(word_list)
 				break
 			}
 		}
@@ -130,23 +131,21 @@ func play_single_game(reader *bufio.Reader) {
 	fmt.Println(ColorRed + "Game over! Maximum attempts reached." + ColorReset)
 }
 
-
-
 func play_automated_game() {
 	reset_game_state()
-	word_list := Get_valide_words()
-	letter_frequency := Get_letter_frequency(word_list)
-	
+	word_list := get_valide_words()
+	letter_frequency := get_letter_frequency(word_list)
+
 	reader := bufio.NewReader(os.Stdin)
 
 	for attempt := 1; attempt <= 6; attempt++ {
 		// Handle case where word doesn't exist
 		for {
-			best_word := Get_best_word(word_list, letter_frequency)
-			
+			best_word := get_best_word(word_list, letter_frequency)
+
 			// Output suggested word for Python to use
 			fmt.Printf("WORD:%s\n", best_word)
-			
+
 			// Wait for validation input from Python
 			input, err := reader.ReadString('\n')
 			if err != nil {
@@ -157,7 +156,7 @@ func play_automated_game() {
 
 			if input == "SKIP" {
 				word_list = remove_word(word_list, best_word)
-				letter_frequency = Get_letter_frequency(word_list)
+				letter_frequency = get_letter_frequency(word_list)
 				continue
 			}
 
@@ -183,9 +182,9 @@ func play_automated_game() {
 			}
 
 			if valid {
-				Update_letter_conditions(input, best_word)
-				word_list = Filter_word_list(word_list)
-				letter_frequency = Get_letter_frequency(word_list)
+				update_letter_conditions(input, best_word)
+				word_list = filter_word_list(word_list)
+				letter_frequency = get_letter_frequency(word_list)
 				fmt.Printf("UPDATED:%d\n", len(word_list))
 				break
 			}

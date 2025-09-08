@@ -2,5 +2,9 @@
     "workbench.colorCustomizations": {
         "minimap.background": "#00000000",
         "scrollbar.shadow": "#00000000"
+    },
+    "go.buildTags": "generate,solver",
+    "gopls": {
+        "build.buildFlags": ["-tags=generate,solver"]
     }
 }

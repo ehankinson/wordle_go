@@ -235,10 +235,10 @@ func generate_training_data(num_games int) []GameData {
     for game := 0; game < num_games; game++ {
         reset_game_state()  // Reset globals
         
-        word_list := Get_valide_words()
+        word_list := get_valide_words()
         words_before := len(word_list)
         exploration_params := get_exploration_params()
-        final_word := Get_random_word(word_list)
+        final_word := get_random_word(word_list)
         
         game_experiences := []Experience{}
         previous_guesses := []string{}
@@ -255,14 +255,14 @@ func generate_training_data(num_games int) []GameData {
             }
             
             // Make guess
-            letter_frequency := Get_letter_frequency(word_list)
-            ranked_words := Ranked_words(word_list, letter_frequency)
+            letter_frequency := get_letter_frequency(word_list)
+            ranked_words := ranked_words(word_list, letter_frequency)
             guessing_word := get_word(ranked_words, exploration_params)
-            validation := Nyt_word_validator(final_word, guessing_word)
+            validation := nyt_word_validator(final_word, guessing_word)
             
             // Update game state
-            Update_letter_conditions(validation, guessing_word)
-            word_list = Filter_word_list(word_list)
+            update_letter_conditions(validation, guessing_word)
+            word_list = filter_word_list(word_list)
             words_after := len(word_list)
             
             // Calculate reward

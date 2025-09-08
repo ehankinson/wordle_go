@@ -5,22 +5,23 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 )
 
-const VALID_WORDS_PATH = "words/all_valid_words.txt"
+// Build the path relative to this file's location
+// Since main.go is in src/go, we go up 2 directories to reach project root
+var VALID_WORDS_PATH = filepath.Join(get_current_dir(), "..", "..", "words", "all_valid_words.txt")
 
 var LETTER_CONDITIONS = make(map[string]map[string]any)
 var FINAL_WORD = make([]string, 5)
 var KNOWN_LETTERS = []string{}
 
-
 type word_score struct {
 	word string
 	prob float64
 }
-
 
 func init() {
 	// Single letter checks
@@ -52,73 +53,31 @@ func reset_game_state() {
 	for i := range FINAL_WORD {
 		FINAL_WORD[i] = ""
 	}
+
+	KNOWN_LETTERS = []string{}
 }
 
 
 
-func Get_random_word(word_list []string) string {
+func get_known_letters() []string {
+	return KNOWN_LETTERS
+}
+
+
+
+func get_final_word() []string {
+	return FINAL_WORD
+}
+
+
+
+func get_random_word(word_list []string) string {
 	return word_list[rand.Intn(len(word_list))]
 }
 
 
 
-func contains_letter(letter string, word string) bool {
-	for _, l := range word {
-		if string(l) == letter {
-			return true
-		}
-	}
-	return false
-}
-
-
-
-func count_letters(letter string, letters string) int {
-	count := 0
-	for _, l := range letters {
-		if string(l) == letter {
-			count++
-		}
-	}
-
-	return count
-}
-
-
-
-func contains_number(number int, numbers []int) bool {
-	for _, item := range numbers {
-		if number == item {
-			return true
-		}
-	}
-
-	return false
-}
-
-
-
-func containes_letters(word string, known_letters []string) bool {
-	for _, know_letter := range known_letters {
-
-		in_word := false
-		for _, word_letter := range word {
-			if know_letter == string(word_letter) {
-				in_word = true
-			}
-		}
-
-		if !in_word {
-			return false
-		}
-	}
-
-	return true
-}
-
-
-
-func Nyt_word_validator(final_word string, guessed_word string) string {
+func nyt_word_validator(final_word string, guessed_word string) string {
 	nyt_string := []string{}
 	for i := 0; i < len(guessed_word); i++ {
 		// If the letter is in the correct position
@@ -137,7 +96,7 @@ func Nyt_word_validator(final_word string, guessed_word string) string {
 
 
 
-func Update_letter_conditions(validation_string string, guessed_word string) {
+func update_letter_conditions(validation_string string, guessed_word string) {
 	seen := []string{}
 	for i := 0; i < len(guessed_word); i++ {
 		letter_str := string(guessed_word[i])
@@ -195,12 +154,15 @@ func Update_letter_conditions(validation_string string, guessed_word string) {
 
 
 
-func Get_valide_words() []string {
+func get_valide_words() []string {
 	file, err := os.Open(VALID_WORDS_PATH)
 	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return []string{}
+		fmt.Printf("Error: Cannot find words file at '%s'\n", VALID_WORDS_PATH)
+		fmt.Println("Please ensure you're running from the project root or src/go directory")
+		fmt.Printf("Attempted paths: %s\n", err)
+		os.Exit(1)
 	}
+	defer file.Close()
 
 	word_list := []string{}
 	scanner := bufio.NewScanner(file)
@@ -213,7 +175,7 @@ func Get_valide_words() []string {
 
 
 
-func Get_letter_frequency(word_list []string) map[string]map[int]float64 {
+func get_letter_frequency(word_list []string) map[string]map[int]float64 {
 	letter_count := make(map[string]map[int]float64)
 	for _, word := range word_list {
 		for i := 0; i < 5; i++ {
@@ -239,14 +201,14 @@ func Get_letter_frequency(word_list []string) map[string]map[int]float64 {
 
 
 
-func Get_best_word(word_list []string, letter_frequency map[string]map[int]float64) string {
-	ranked_words := Ranked_words(word_list, letter_frequency)
+func get_best_word(word_list []string, letter_frequency map[string]map[int]float64) string {
+	ranked_words := ranked_words(word_list, letter_frequency)
 	return ranked_words[0].word
 }
 
 
 
-func Ranked_words(word_list []string, letter_frequency map[string]map[int]float64) []word_score {
+func ranked_words(word_list []string, letter_frequency map[string]map[int]float64) []word_score {
 	ranked_words := make([]word_score, 0, len(letter_frequency))
 	for _, word := range word_list {
 
@@ -270,7 +232,7 @@ func Ranked_words(word_list []string, letter_frequency map[string]map[int]float6
 
 
 
-func Filter_word_list(word_list []string) []string {
+func filter_word_list(word_list []string) []string {
 	filtered_words := []string{}
 
 	for _, word := range word_list {
