@@ -1,13 +1,11 @@
-//go:build !generate
-// +build !generate
-
 package main
 
 import (
-	"bufio"
-	"fmt"
 	"os"
+	"fmt"
+	"bufio"
 	"strings"
+	"wordle_go/solver"
 )
 
 // ANSI color codes
@@ -29,7 +27,9 @@ const (
 	BgBlack  = "\033[40m"
 )
 
-func colorize_letter(letter byte, validation byte) string {
+
+
+func colorizeLetter(letter byte, validation byte) string {
 	letterStr := string(letter)
 	switch validation {
 	case 'g':
@@ -43,17 +43,21 @@ func colorize_letter(letter byte, validation byte) string {
 	}
 }
 
-func display_colored_word(word string, validation string) string {
+
+
+func displayColoredWord(word string, validation string) string {
 	result := ""
 	for i := 0; i < len(word) && i < len(validation); i++ {
-		result += colorize_letter(word[i], validation[i])
+		result += colorizeLetter(word[i], validation[i])
 	}
 	return result
 }
 
-func remove_word(word_list []string, word string) []string {
-	result := make([]string, 0, len(word_list))
-	for _, w := range word_list {
+
+
+func removeWord(wordList []string, word string) []string {
+	result := make([]string, 0, len(wordList))
+	for _, w := range wordList {
 		if w != word {
 			result = append(result, w)
 		}
@@ -61,10 +65,12 @@ func remove_word(word_list []string, word string) []string {
 	return result
 }
 
-func play_single_game(reader *bufio.Reader) {
-	reset_game_state()
-	word_list := get_valide_words()
-	letter_frequency := get_letter_frequency(word_list)
+
+
+func playSingleGame(reader *bufio.Reader) {
+	solver.ResetGameState()
+	wordList := solver.GetValidWords()
+	letterFrequency := solver.GetLetterFrequency(wordList)
 
 	fmt.Println(ColorCyan + "\n=== Starting New Wordle Game ===" + ColorReset)
 	fmt.Println("Enter validation string: " + BgGreen + ColorWhite + " g " + ColorReset + " = green (correct), " + BgYellow + ColorBlack + " y " + ColorReset + " = yellow (wrong position), " + BgBlack + ColorWhite + " b " + ColorReset + " = black (not in word)")
@@ -73,28 +79,27 @@ func play_single_game(reader *bufio.Reader) {
 
 	for attempt := 1; attempt <= 6; attempt++ {
 		fmt.Printf(ColorPurple+"\n--- Attempt %d/6 ---\n"+ColorReset, attempt)
-		fmt.Printf(ColorBlue+"Words remaining: %d\n"+ColorReset, len(word_list))
+		fmt.Printf(ColorBlue+"Words remaining: %d\n"+ColorReset, len(wordList))
 
 		// Handle case where word doesn't exist
 		for {
-			best_word := get_best_word(word_list, letter_frequency)
-			fmt.Printf(ColorCyan+"Suggested word: "+ColorWhite+"%s"+ColorReset+"\n", best_word)
+			bestWord := solver.GetBestWord(wordList, letterFrequency)
+			fmt.Printf(ColorCyan+"Suggested word: "+ColorWhite+"%s"+ColorReset+"\n", bestWord)
 
 			fmt.Print("Enter validation (or 'skip'): ")
 			input, _ := reader.ReadString('\n')
 			input = strings.TrimSpace(input)
-			// input := "bbbbb"
 
 			if input == "skip" {
 				fmt.Println("Removing word from dictionary...")
-				word_list = remove_word(word_list, best_word)
-				letter_frequency = get_letter_frequency(word_list)
+				wordList = removeWord(wordList, bestWord)
+				letterFrequency = solver.GetLetterFrequency(wordList)
 				continue
 			}
 
 			// Check if solved
 			if input == "ggggg" {
-				fmt.Printf(ColorGreen+"\n🎉 Congratulations! You solved it with '%s' in %d attempts!\n"+ColorReset, best_word, attempt)
+				fmt.Printf(ColorGreen+"\n🎉 Congratulations! You solved it with '%s' in %d attempts!\n"+ColorReset, bestWord, attempt)
 				return
 			}
 
@@ -114,15 +119,15 @@ func play_single_game(reader *bufio.Reader) {
 			}
 
 			if valid {
-				fmt.Printf("Result: %s\n", display_colored_word(best_word, input))
-				update_letter_conditions(input, best_word)
-				word_list = filter_word_list(word_list)
-				letter_frequency = get_letter_frequency(word_list)
+				fmt.Printf("Result: %s\n", displayColoredWord(bestWord, input))
+				solver.UpdateLetterConditions(input, bestWord)
+				wordList = solver.FilterWordList(wordList)
+				letterFrequency = solver.GetLetterFrequency(wordList)
 				break
 			}
 		}
 
-		if len(word_list) == 0 {
+		if len(wordList) == 0 {
 			fmt.Println(ColorRed + "No more words available. Something might be wrong with the input." + ColorReset)
 			return
 		}
@@ -131,20 +136,22 @@ func play_single_game(reader *bufio.Reader) {
 	fmt.Println(ColorRed + "Game over! Maximum attempts reached." + ColorReset)
 }
 
-func play_automated_game() {
-	reset_game_state()
-	word_list := get_valide_words()
-	letter_frequency := get_letter_frequency(word_list)
+
+
+func playAutomatedGame() {
+	solver.ResetGameState()
+	wordList := solver.GetValidWords()
+	letterFrequency := solver.GetLetterFrequency(wordList)
 
 	reader := bufio.NewReader(os.Stdin)
 
 	for attempt := 1; attempt <= 6; attempt++ {
 		// Handle case where word doesn't exist
 		for {
-			best_word := get_best_word(word_list, letter_frequency)
+			bestWord := solver.GetBestWord(wordList, letterFrequency)
 
 			// Output suggested word for Python to use
-			fmt.Printf("WORD:%s\n", best_word)
+			fmt.Printf("WORD:%s\n", bestWord)
 
 			// Wait for validation input from Python
 			input, err := reader.ReadString('\n')
@@ -155,14 +162,14 @@ func play_automated_game() {
 			input = strings.TrimSpace(input)
 
 			if input == "SKIP" {
-				word_list = remove_word(word_list, best_word)
-				letter_frequency = get_letter_frequency(word_list)
+				wordList = removeWord(wordList, bestWord)
+				letterFrequency = solver.GetLetterFrequency(wordList)
 				continue
 			}
 
 			// Check if solved
 			if input == "ggggg" {
-				fmt.Printf("SOLVED:%s:%d\n", best_word, attempt)
+				fmt.Printf("SOLVED:%s:%d\n", bestWord, attempt)
 				return
 			}
 
@@ -182,15 +189,15 @@ func play_automated_game() {
 			}
 
 			if valid {
-				update_letter_conditions(input, best_word)
-				word_list = filter_word_list(word_list)
-				letter_frequency = get_letter_frequency(word_list)
-				fmt.Printf("UPDATED:%d\n", len(word_list))
+				solver.UpdateLetterConditions(input, bestWord)
+				wordList = solver.FilterWordList(wordList)
+				letterFrequency = solver.GetLetterFrequency(wordList)
+				fmt.Printf("UPDATED:%d\n", len(wordList))
 				break
 			}
 		}
 
-		if len(word_list) == 0 {
+		if len(wordList) == 0 {
 			fmt.Printf("ERROR:No more words available\n")
 			return
 		}
@@ -199,10 +206,12 @@ func play_automated_game() {
 	fmt.Printf("FAILED:Maximum attempts reached\n")
 }
 
+
+
 func main() {
 	// Check for automated mode
 	if len(os.Args) > 1 && os.Args[1] == "--auto" {
-		play_automated_game()
+		playAutomatedGame()
 		return
 	}
 
@@ -212,7 +221,7 @@ func main() {
 	fmt.Println(ColorPurple + "Welcome to the NYT Wordle Solver!" + ColorReset)
 
 	for {
-		play_single_game(reader)
+		playSingleGame(reader)
 
 		fmt.Print(ColorYellow + "\nWould you like to play another game? (y/n): " + ColorReset)
 		response, _ := reader.ReadString('\n')

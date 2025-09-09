@@ -2,11 +2,29 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Package",
+            "name": "Launch Main",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}"
+            "program": "${workspaceFolder}/src/go"
+        },
+        {
+            "name": "Debug Generate Data",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/src/go/cmd/generate",
+            "cwd": "${workspaceFolder}/src/go",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug NYT Solver",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/src/go/cmd/nyt",
+            "cwd": "${workspaceFolder}/src/go",
+            "console": "integratedTerminal"
         }
     ]
 }

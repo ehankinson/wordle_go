@@ -1,4 +1,4 @@
-package main
+package solver
 
 type Strategy int
 
@@ -31,7 +31,19 @@ type State struct {
 }
 
 type LetterConstraints struct {
-	CorrectPositions []string `json:"correct_positions"`
-	PresentLetters   []string `json:"present_letters"`
-	AbsentLetters    []string `json:"absent_letters"`
+	CorrectPositions []rune `json:"correct_positions"`
+	PresentLetters   []rune `json:"present_letters"`
+	AbsentLetters    []rune `json:"absent_letters"`
+}
+
+type LetterCondition struct {
+	Status           *bool
+	CorrectPositions []int
+	WrongPositions   []int
+	Double           *bool
+}
+
+type WordScore struct {
+	Word string
+	Prob float64
 }

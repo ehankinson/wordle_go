@@ -44,8 +44,25 @@ fi
 echo "✅ Conda environment activated"
 
 # Compile the Go programs
-echo "Compiling Go solver..."
-go build -o bin/wordle_solver src/go/main.go src/go/nyt_solver.go
+echo "Compiling Go programs..."
+
+# Change to the Go source directory
+cd src/go
+
+# Build the main program
+echo "  Building main program..."
+go build -o ../../bin/wordle_main .
+
+# Build the NYT solver
+echo "  Building NYT solver..."
+go build -o ../../bin/nyt_solver ./cmd/nyt
+
+# Build the data generator
+echo "  Building data generator..."
+go build -o ../../bin/generate_data ./cmd/generate
+
+# Return to original directory
+cd ../..
 
 # Check if compilation was successful
 if [ $? -ne 0 ]; then
@@ -54,4 +71,4 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "✅ Go solver compiled successfully"
+echo "✅ Go programs compiled successfully"
