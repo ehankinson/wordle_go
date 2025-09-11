@@ -3,7 +3,7 @@
 Base WebDriver class for Wordle-like games
 Provides common functionality for web automation
 """
-
+import os
 import time
 import subprocess
 
@@ -39,12 +39,12 @@ CHECKS = {
 class WordleDriver(ABC):
     """Base class for Wordle web drivers"""
     
-    def __init__(self, game_url, wordle_type):
+    def __init__(self, game_url = None, wordle_type = None):
         self.driver = None
         self.go_process = None
         self.game_url = game_url
         self.wordle_type = wordle_type
-        self.config = CHECKS[wordle_type]
+        self.config = CHECKS[wordle_type] if wordle_type else None
     
 
 
@@ -71,8 +71,9 @@ class WordleDriver(ABC):
     def start_go_solver(self):
         """Start the Go solver process"""
         try:
+            solver_path = os.path.join(os.path.dirname(__file__), '..', '..', 'bin', 'wordle_solver')
             self.go_process = subprocess.Popen(
-                ['./bin/wordle_solver', '--auto'],
+                [solver_path, '--auto'],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -141,10 +142,17 @@ class WordleDriver(ABC):
     def communicate_with_solver(self, message):
         """Send message to Go solver and get response"""
         try:
+            if self.go_process is None or self.go_process.poll() is not None:
+                print("Solver process is not running")
+                return None
+                
             self.go_process.stdin.write(message + "\n")
             self.go_process.stdin.flush()
             response = self.go_process.stdout.readline().strip()
             return response
+        except BrokenPipeError:
+            print("Solver process has terminated unexpectedly")
+            return None
         except Exception as e:
             print(f"Error communicating with solver: {e}")
             return None
@@ -155,24 +163,31 @@ class WordleDriver(ABC):
         """Get next word from solver based on validation result"""
         response = self.communicate_with_solver(validation_result)
         
-        if response and response.startswith("WORD:"):
+        if not response:
+            return None
+            
+        if response.startswith("WORD:"):
             return response[5:]
-        elif response and response.startswith("SOLVED:"):
+        elif response.startswith("SOLVED:"):
             parts = response.split(":")
             word = parts[1] if len(parts) > 1 else ""
             attempts = parts[2] if len(parts) > 2 else ""
             print(f"🎉 Puzzle solved with '{word}' in {attempts} attempts!")
             return None
-        elif response and response.startswith("UPDATED:"):
+        elif response.startswith("UPDATED:"):
             # Solver updated, get next word
             remaining = response[8:]
             print(f"Solver updated: {remaining} words remaining")
-            next_response = self.go_process.stdout.readline().strip()
-            if next_response.startswith("WORD:"):
-                return next_response[5:]
-        elif response and response.startswith("ERROR:"):
+            try:
+                next_response = self.go_process.stdout.readline().strip()
+                if next_response.startswith("WORD:"):
+                    return next_response[5:]
+            except Exception as e:
+                print(f"Error reading next word after update: {e}")
+                return None
+        elif response.startswith("ERROR:"):
             print(f"Solver error: {response[6:]}")
-        elif response and response.startswith("FAILED:"):
+        elif response.startswith("FAILED:"):
             print("Solver failed to find solution")
         
         return None

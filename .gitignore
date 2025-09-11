@@ -3,3 +3,4 @@
 src/python/__pycache__
 data/trainning_set.json
 bin/
+words/total_results.json

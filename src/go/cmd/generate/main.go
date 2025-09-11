@@ -203,7 +203,7 @@ func generateData(numGames int) error {
 			isFinal := isWinner || att == WORDLE_ATTEMPTS-1
 
 			reward := calculateReward(
-				att+1,
+				att + 1,
 				wordsBefore,
 				wordsAfter,
 				validationString,
@@ -240,7 +240,7 @@ func generateData(numGames int) error {
 			}
 		}
 
-		if (game+1)%100 == 0 {
+		if (game + 1) % 100 == 0 {
 			elapsed := time.Since(startTime)
 			fmt.Printf("Generated %d experiences (%.2f seconds elapsed)\n", totalExperiences, elapsed.Seconds())
 			file.Sync()
