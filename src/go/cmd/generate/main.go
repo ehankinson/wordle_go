@@ -39,19 +39,19 @@ func getExplorationParams() solver.ExplorationData {
 
 	if r < 0.4 {
 		return solver.ExplorationData{
-			Temp:     0.3 + rand.Float64()*0.3,
+			Temp:     0.3 + rand.Float64() * 0.3,
 			TopK:     5 + rand.Intn(5),
 			Strategy: solver.EXPLOIT,
 		}
 	} else if r < 0.8 {
 		return solver.ExplorationData{
-			Temp:     0.7 + rand.Float64()*0.5,
+			Temp:     0.7 + rand.Float64() * 0.5,
 			TopK:     10 + rand.Intn(10),
 			Strategy: solver.EXPLORE,
 		}
 	} else {
 		return solver.ExplorationData{
-			Temp:     1.2 + rand.Float64()*0.8,
+			Temp:     1.2 + rand.Float64() * 0.8,
 			TopK:     30 + rand.Intn(70),
 			Strategy: solver.RANDOM,
 		}
@@ -119,7 +119,7 @@ func calculateReward(guessNum int, wordsBefore int, wordsAfter int, feedback str
 	// Terminal rewards
 	if isFinal {
 		if feedback == "ggggg" {
-			reward += 10.0 + float64(7-guessNum)*2.0
+			reward += 10.0 + float64(7 - guessNum) * 2.0
 		} else {
 			reward -= 5.0
 		}
@@ -180,8 +180,8 @@ func generateData(numGames int) error {
 		wordList := STARTING_WORDS
 		wordsBefore := len(wordList) // Number of words for reward calculation
 		explorationParams := getExplorationParams()
-		// finalWord := solver.GetRandomWord(wordList)
-		finalWord := "quick"
+		finalWord := solver.GetRandomWord(wordList)
+		gameExperiences := []solver.Experience{}
 		previousGuesses := []string{}
 		previousFeedback := []string{}
 
@@ -218,18 +218,7 @@ func generateData(numGames int) error {
 				Done:     isFinal,
 			}
 
-			if !first {
-				file.WriteString(",\n")
-			}
-			first = false
-
-			jsonBytes, err := json.Marshal(exp)
-			if err != nil {
-				return fmt.Errorf("failed to marshal experience: %v", err)
-			}
-
-			file.WriteString("  ")
-			file.Write(jsonBytes)
+			gameExperiences = append(gameExperiences, exp)
 
 			totalExperiences++
 			wordsBefore = wordsAfter
@@ -239,6 +228,19 @@ func generateData(numGames int) error {
 				break
 			}
 		}
+
+		if !first {
+			file.WriteString(",\n")
+		}
+		first = false
+
+		jsonBytes, err := json.Marshal(gameExperiences)
+		if err != nil {
+			return fmt.Errorf("failed to marshal experience: %v", err)
+		}
+
+		file.WriteString("  ")
+		file.Write(jsonBytes)
 
 		if (game + 1) % 100 == 0 {
 			elapsed := time.Since(startTime)
