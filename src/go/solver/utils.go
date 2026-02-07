@@ -1,11 +1,11 @@
 package solver
 
+import "slices"
+
 func ContainsRunes(word string, runes []rune) bool {
 	for _, char := range word {
-		for _, r := range runes {
-			if char == r {
-				return true
-			}
+		if slices.Contains(runes, char) {
+			return true
 		}
 	}
 
@@ -22,15 +22,13 @@ func ContainsRune(word string, r rune) bool {
 	return false
 }
 
-func ContainsNumber(n int, numbers []int) bool {
-	for _, num := range numbers {
-		if n == num {
-			return true
-		}
-	}
 
-	return false
+
+func ContainsNumber(n int, numbers []int) bool {
+	return slices.Contains(numbers, n)
 }
+
+
 
 func CountRunes(word string, r rune) int {
 	count := 0
