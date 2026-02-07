@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 	"wordle_go/solver"
 )
 
@@ -20,4 +21,10 @@ func main() {
 	// Get a random word
 	randomWord := solver.GetRandomWord(words)
 	fmt.Printf("Random word: %s\n", randomWord)
+
+	startTime := time.Now()
+	patterns := solver.GetAllLetterPatterns()
+	elapsed := time.Since(startTime)
+	fmt.Println(len(patterns))
+	fmt.Printf("Time taken: %s\n", elapsed)
 }

@@ -9,6 +9,15 @@
             "program": "${workspaceFolder}/src/go"
         },
         {
+            "name": "Debug Main (src/go/main.go)",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/src/go/main.go",
+            "cwd": "${workspaceFolder}/src/go",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Debug Generate Data",
             "type": "go",
             "request": "launch",

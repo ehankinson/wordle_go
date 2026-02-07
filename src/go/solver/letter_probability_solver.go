@@ -1,18 +1,11 @@
 package solver
 
 import (
-	"os"
-	"fmt"
 	"sort"
-	"bufio"
-	"runtime"
 	"strings"
 	"math/rand"
-	"path/filepath"
 )
 
-// Build the path relative to this file's location
-var validWordsPath = filepath.Join(getCurrentDir(), "..", "..", "..", "words", "all_valid_words.txt")
 
 var letterConditions = make(map[rune]*LetterCondition)
 var finalWord = make([]rune, 5)
@@ -20,13 +13,10 @@ var knownLetters = []rune{}
 var trueVal = true
 var falseVal = false
 
+
+
 func init() {
 	ResetGameState()
-}
-
-func getCurrentDir() string {
-	_, filename, _, _ := runtime.Caller(0)
-	return filepath.Dir(filename)
 }
 
 
@@ -138,27 +128,6 @@ func UpdateLetterConditions(validationString string, guessedWord string) {
 
 		seen[letter] = &trueVal
 	}
-}
-
-
-
-func GetValidWords() []string {
-	file, err := os.Open(validWordsPath)
-	if err != nil {
-		fmt.Printf("Error: Cannot find words file at '%s'\n", validWordsPath)
-		fmt.Println("Please ensure you're running from the project root or src/go directory")
-		fmt.Printf("Attempted paths: %s\n", err)
-		os.Exit(1)
-	}
-	defer file.Close()
-
-	wordList := []string{}
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		wordList = append(wordList, scanner.Text())
-	}
-
-	return wordList
 }
 
 
