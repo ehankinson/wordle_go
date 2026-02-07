@@ -55,8 +55,9 @@ func displayColoredWord(word string, validation string) string {
 
 
 
-func removeWord(wordList []string, word string) []string {
-	result := make([]string, 0, len(wordList))
+func removeWord(wordList [][5]byte, word [5]byte) [][5]byte {
+	result := make([][5]byte, 0, len(wordList))
+
 	for _, w := range wordList {
 		if w != word {
 			result = append(result, w)
@@ -119,7 +120,7 @@ func playSingleGame(reader *bufio.Reader) {
 			}
 
 			if valid {
-				fmt.Printf("Result: %s\n", displayColoredWord(bestWord, input))
+				fmt.Printf("Result: %s\n", displayColoredWord(string(bestWord[:]), input))
 				solver.UpdateLetterConditions(input, bestWord)
 				wordList = solver.FilterWordList(wordList)
 				letterFrequency = solver.GetLetterFrequency(wordList)
@@ -151,7 +152,7 @@ func playAutomatedGame() {
 			bestWord := solver.GetBestWord(wordList, letterFrequency)
 
 			// Output suggested word for Python to use
-			fmt.Printf("WORD:%s\n", bestWord)
+			fmt.Printf("WORD:%s\n", string(bestWord[:]))
 
 			// Wait for validation input from Python
 			input, err := reader.ReadString('\n')

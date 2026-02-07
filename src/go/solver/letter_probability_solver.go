@@ -7,9 +7,9 @@ import (
 )
 
 
-var letterConditions = make(map[rune]*LetterCondition)
-var finalWord = make([]rune, 5)
-var knownLetters = []rune{}
+var letterConditions = make(map[byte]*LetterCondition)
+var finalWord [5]byte
+var knownLetters []byte
 var trueVal = true
 var falseVal = false
 
@@ -23,35 +23,41 @@ func init() {
 
 func ResetGameState() {
 	// Reset letter conditions
-	for letter := 'a'; letter <= 'z'; letter++ {
+	for letter := byte('a'); letter <= byte('z'); letter++ {
 		letterConditions[letter] = &LetterCondition{
 			Status:           nil,
+			Double:           &trueVal,
 			CorrectPositions: make([]int, 5),
 			WrongPositions:   make([]int, 5),
-			Double:           &trueVal,
 		}
 	}
 	// Reset final word
-	finalWord = make([]rune, 5)
-	knownLetters = []rune{}
+	finalWord = [5]byte{}
+	knownLetters = []byte{}
 }
 
 
 
-func GetKnownLetters() []rune {
+func GetKnownLetters() []byte {
 	return knownLetters
 }
 
 
 
-func GetFinalWord() []rune {
+func GetFinalWord() [5]byte {
 	return finalWord
 }
 
 
 
-func GetRandomWord(wordList []string) string {
+func GetRandomWord(wordList [][5]byte) [5]byte {
 	return wordList[rand.Intn(len(wordList))]
+}
+
+
+
+func GetLetterConditions() map[byte]*LetterCondition {
+	return letterConditions
 }
 
 
@@ -75,55 +81,57 @@ func NYTWordValidator(finalWord string, guessedWord string) string {
 
 
 
-func UpdateLetterConditions(validationString string, guessedWord string) {
-	seen := make(map[rune]*bool)
+func UpdateLetterConditions(validationString string, guessedWord [5]byte) {
+	seen := make(map[byte]*bool)
+	validationBytes := []byte(validationString)
+
 	for index, letter := range guessedWord {
-		switch rune(validationString[index]) {
-		case 'g':
-			// If the letter is in the correct position
-			letterConditions[letter].Status = &trueVal
+		switch validationBytes[index] {
+			case 'g':
+				// If the letter is in the correct position
+				letterConditions[letter].Status = &trueVal
 
-			positions := letterConditions[letter].CorrectPositions
-			positions = append(positions, index)
-			letterConditions[letter].CorrectPositions = positions
+				positions := letterConditions[letter].CorrectPositions
+				positions = append(positions, index)
+				letterConditions[letter].CorrectPositions = positions
 
-			// We will add this to the 'mock' final word to help us remove unwated words
-			finalWord[index] = letter
-			// Since we know that this letter is in the word, we should also remove all other words that don't include it
-			knownLetters = append(knownLetters, letter)
+				// We will add this to the 'mock' final word to help us remove unwated words
+				finalWord[index] = letter
+				// Since we know that this letter is in the word, we should also remove all other words that don't include it
+				knownLetters = append(knownLetters, letter)
 
-			// If we have already seen the letter and it shouldn't be in the word
-			// That means that duplicates are no longer allowed
+				// If we have already seen the letter and it shouldn't be in the word
+				// That means that duplicates are no longer allowed
 
-			if _, exists := seen[letter]; exists && !*letterConditions[letter].Status {
-				letterConditions[letter].Double = &falseVal
-			}
+				if _, exists := seen[letter]; exists && !*letterConditions[letter].Status {
+					letterConditions[letter].Double = &falseVal
+				}
 
-		case 'y':
-			// If the letter is in the word, but incorrect position
-			letterConditions[letter].Status = &trueVal
+			case 'y':
+				// If the letter is in the word, but incorrect position
+				letterConditions[letter].Status = &trueVal
 
-			positions := letterConditions[letter].WrongPositions
-			positions = append(positions, index)
-			letterConditions[letter].WrongPositions = positions
+				positions := letterConditions[letter].WrongPositions
+				positions = append(positions, index)
+				letterConditions[letter].WrongPositions = positions
 
-			// If we have already seen the letter and it shouldn't be in the word
-			// That means that duplicates are no longer allowed
-			if _, exists := seen[letter]; exists && !*letterConditions[letter].Status {
-				letterConditions[letter].Double = &falseVal
-			}
+				// If we have already seen the letter and it shouldn't be in the word
+				// That means that duplicates are no longer allowed
+				if _, exists := seen[letter]; exists && !*letterConditions[letter].Status {
+					letterConditions[letter].Double = &falseVal
+				}
 
-			// Since we know that this letter is in the word, we should also remove all other words that don't include it
-			knownLetters = append(knownLetters, letter)
+				// Since we know that this letter is in the word, we should also remove all other words that don't include it
+				knownLetters = append(knownLetters, letter)
 
-		default:
-			// If we have already looked at the letter and the new is a 'b' that means there are no doubles,
-			// but could still be possible for that letter to be in the word
-			if _, exists := seen[letter]; exists {
-				letterConditions[letter].Double = &falseVal
-			} else {
-				letterConditions[letter].Status = &falseVal
-			}
+			default:
+				// If we have already looked at the letter and the new is a 'b' that means there are no doubles,
+				// but could still be possible for that letter to be in the word
+				if _, exists := seen[letter]; exists {
+					letterConditions[letter].Double = &falseVal
+				} else {
+					letterConditions[letter].Status = &falseVal
+				}
 		}
 
 		seen[letter] = &trueVal
@@ -132,23 +140,19 @@ func UpdateLetterConditions(validationString string, guessedWord string) {
 
 
 
-func GetLetterFrequency(wordList []string) map[rune]map[int]float64 {
-	letterCount := make(map[rune]map[int]float64)
+func GetLetterFrequency(wordList [][5]byte) [26][5]float64 {
+	var letterFrequency [26][5]float64
 	for _, word := range wordList {
 		for index, letter := range word {
-			if letterCount[letter] == nil {
-				letterCount[letter] = make(map[int]float64)
-			}
-			letterCount[letter][index]++
+			letterIndex := int(letter - 'a')
+			letterFrequency[letterIndex][index] += 1.0
 		}
 	}
 
-	totalLetter := len(letterCount)
-	letterFrequency := make(map[rune]map[int]float64)
-	for abr, positions := range letterCount {
-		letterFrequency[abr] = make(map[int]float64)
-		for position, count := range positions {
-			letterFrequency[abr][position] = float64(count) / float64(totalLetter)
+	totalWords := float64(len(wordList))
+	for i := 0; i < 26; i++ {
+		for j := 0; j < 5; j++{
+			letterFrequency[i][j] /= totalWords
 		}
 	}
 
@@ -157,25 +161,25 @@ func GetLetterFrequency(wordList []string) map[rune]map[int]float64 {
 
 
 
-func GetBestWord(wordList []string, letterFrequency map[rune]map[int]float64) string {
+func GetBestWord(wordList [][5]byte, letterFrequency [26][5]float64) [5]byte {
 	rankedWords := RankedWords(wordList, letterFrequency)
 	return rankedWords[0].Word
 }
 
 
 
-func RankedWords(wordList []string, letterFrequency map[rune]map[int]float64) []WordScore {
-	rankedWords := make([]WordScore, 0, len(letterFrequency))
-	for _, word := range wordList {
+func RankedWords(wordList [][5]byte, letterFrequency [26][5]float64) []WordScore {
+	totalWords := len(wordList)
+	rankedWords := make([]WordScore, totalWords)
 
+	for wordIndex, word := range wordList {
 		var prob float64 = 0.0
-
-		for i, letter := range word {
-			count := CountRunes(word, letter)
-			prob += letterFrequency[letter][i] / float64(count)
+		for letterIndex, letter := range word {
+			index := int(letter - 'a')
+			prob += letterFrequency[index][letterIndex]
 		}
-
-		rankedWords = append(rankedWords, WordScore{Word: word, Prob: prob})
+		rankedWords[wordIndex].Word = word
+		rankedWords[wordIndex].Prob = prob
 	}
 
 	sort.Slice(rankedWords, func(i, j int) bool {
@@ -187,8 +191,8 @@ func RankedWords(wordList []string, letterFrequency map[rune]map[int]float64) []
 
 
 
-func FilterWordList(wordList []string) []string {
-	filteredWords := []string{}
+func FilterWordList(wordList [][5]byte) [][5]byte {
+	filteredWords := make([][5]byte, 0, len(wordList))
 
 	for _, word := range wordList {
 		// when the finalWord is being built we should skip any word which does not follow the skeleton
@@ -210,7 +214,7 @@ func FilterWordList(wordList []string) []string {
 		}
 
 		// The word does not contain one of the know letters in the word, so we should skip
-		if len(knownLetters) > 0 && !ContainsRunes(word, knownLetters) {
+		if len(knownLetters) > 0 && !ContainsBytes(word, knownLetters) {
 			continue
 		}
 
@@ -242,11 +246,4 @@ func FilterWordList(wordList []string) []string {
 	}
 
 	return filteredWords
-}
-
-
-
-// Export access to letter conditions for state capture
-func GetLetterConditions() map[rune]*LetterCondition {
-	return letterConditions
 }

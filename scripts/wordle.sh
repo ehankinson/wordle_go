@@ -44,7 +44,12 @@ fi
 
 echo "✅ Conda environment activated"
 
-# Run the Wordle web player (no Go compilation needed)
+# Recompile Go solver each run
+echo "Recompiling Go solver..."
+mkdir -p bin
+(cd src/go && go build -o ../../bin/wordle_solver ./cmd/nyt)
+
+# Run the Wordle web player
 python3 src/python/wordle.py
 
 echo "Done!"

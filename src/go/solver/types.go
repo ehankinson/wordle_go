@@ -38,12 +38,12 @@ type LetterConstraints struct {
 
 type LetterCondition struct {
 	Status           *bool
+	Double           *bool
 	CorrectPositions []int
 	WrongPositions   []int
-	Double           *bool
 }
 
 type WordScore struct {
-	Word string
+	Word [5]byte
 	Prob float64
 }

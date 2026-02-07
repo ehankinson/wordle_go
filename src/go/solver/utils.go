@@ -19,15 +19,19 @@ func getCurrentDir() string {
 
 
 
-func ContainsRunes(word string, runes []rune) bool {
+func ContainsBytes(word [5]byte, knownLetters []byte) bool {
 	for _, char := range word {
-		if slices.Contains(runes, char) {
-			return true
+		for _, knowLetter := range knownLetters {
+			if char == knowLetter {
+				return true
+			}
 		}
 	}
 
 	return false
 }
+
+
 
 func ContainsRune(word string, r rune) bool {
 	for _, char := range word {
@@ -60,7 +64,7 @@ func CountRunes(word string, r rune) int {
 
 
 
-func GetValidWords() []string {
+func GetValidWords() [][5]byte {
 	file, err := os.Open(validWordsPath)
 	if err != nil {
 		fmt.Printf("Error: Cannot find words file at '%s'\n", validWordsPath)
@@ -70,10 +74,13 @@ func GetValidWords() []string {
 	}
 	defer file.Close()
 
-	wordList := []string{}
+	wordList := [][5]byte{}
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		wordList = append(wordList, scanner.Text())
+		text := scanner.Text()
+		var word [5]byte
+		copy(word[:], text)
+		wordList = append(wordList, word)
 	}
 
 	return wordList

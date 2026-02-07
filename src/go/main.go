@@ -17,10 +17,15 @@ func main() {
 	fmt.Println("\nDemonstrating solver package:")
 	words := solver.GetValidWords()
 	fmt.Printf("Loaded %d valid Wordle words\n", len(words))
+
+	letterFrequency := solver.GetLetterFrequency(words)
+	bestWord := solver.GetBestWord(words, letterFrequency)
+	fmt.Printf("Best word: %s\n", bestWord)
+	fmt.Println(len(letterFrequency))
 	
 	// Get a random word
-	randomWord := solver.GetRandomWord(words)
-	fmt.Printf("Random word: %s\n", randomWord)
+	// randomWord := solver.GetRandomWord(words)
+	// fmt.Printf("Random word: %s\n", randomWord)
 
 	startTime := time.Now()
 	patterns := solver.GetAllLetterPatterns()
