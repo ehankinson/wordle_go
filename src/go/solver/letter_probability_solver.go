@@ -1,10 +1,11 @@
 package solver
 
 import (
+	"math/rand"
 	"sort"
 	"strings"
-	"math/rand"
 )
+
 
 
 var letterConditions = make(map[byte]*LetterCondition)
@@ -69,8 +70,8 @@ func NYTWordValidator(finalWord string, guessedWord string) string {
 		if guessedWord[i] == finalWord[i] {
 			nytString = append(nytString, "g")
 			// If the letter is in the word, but incorrect position
-		} else if ContainsRune(finalWord, rune(guessedWord[i])) {
-			nytString = append(nytString, "y")
+		// } else if ContainsByte(finalWord, rune(guessedWord[i])) {
+		// 	nytString = append(nytString, "y")
 			// Letter is not in the word
 		} else {
 			nytString = append(nytString, "b")
@@ -87,51 +88,51 @@ func UpdateLetterConditions(validationString string, guessedWord [5]byte) {
 
 	for index, letter := range guessedWord {
 		switch validationBytes[index] {
-			case 'g':
-				// If the letter is in the correct position
-				letterConditions[letter].Status = &trueVal
+		case 'g':
+			// If the letter is in the correct position
+			letterConditions[letter].Status = &trueVal
 
-				positions := letterConditions[letter].CorrectPositions
-				positions = append(positions, index)
-				letterConditions[letter].CorrectPositions = positions
+			positions := letterConditions[letter].CorrectPositions
+			positions = append(positions, index)
+			letterConditions[letter].CorrectPositions = positions
 
-				// We will add this to the 'mock' final word to help us remove unwated words
-				finalWord[index] = letter
-				// Since we know that this letter is in the word, we should also remove all other words that don't include it
-				knownLetters = append(knownLetters, letter)
+			// We will add this to the 'mock' final word to help us remove unwated words
+			finalWord[index] = letter
+			// Since we know that this letter is in the word, we should also remove all other words that don't include it
+			knownLetters = append(knownLetters, letter)
 
-				// If we have already seen the letter and it shouldn't be in the word
-				// That means that duplicates are no longer allowed
+			// If we have already seen the letter and it shouldn't be in the word
+			// That means that duplicates are no longer allowed
 
-				if _, exists := seen[letter]; exists && !*letterConditions[letter].Status {
-					letterConditions[letter].Double = &falseVal
-				}
+			if _, exists := seen[letter]; exists && !*letterConditions[letter].Status {
+				letterConditions[letter].Double = &falseVal
+			}
 
-			case 'y':
-				// If the letter is in the word, but incorrect position
-				letterConditions[letter].Status = &trueVal
+		case 'y':
+			// If the letter is in the word, but incorrect position
+			letterConditions[letter].Status = &trueVal
 
-				positions := letterConditions[letter].WrongPositions
-				positions = append(positions, index)
-				letterConditions[letter].WrongPositions = positions
+			positions := letterConditions[letter].WrongPositions
+			positions = append(positions, index)
+			letterConditions[letter].WrongPositions = positions
 
-				// If we have already seen the letter and it shouldn't be in the word
-				// That means that duplicates are no longer allowed
-				if _, exists := seen[letter]; exists && !*letterConditions[letter].Status {
-					letterConditions[letter].Double = &falseVal
-				}
+			// If we have already seen the letter and it shouldn't be in the word
+			// That means that duplicates are no longer allowed
+			if _, exists := seen[letter]; exists && !*letterConditions[letter].Status {
+				letterConditions[letter].Double = &falseVal
+			}
 
-				// Since we know that this letter is in the word, we should also remove all other words that don't include it
-				knownLetters = append(knownLetters, letter)
+			// Since we know that this letter is in the word, we should also remove all other words that don't include it
+			knownLetters = append(knownLetters, letter)
 
-			default:
-				// If we have already looked at the letter and the new is a 'b' that means there are no doubles,
-				// but could still be possible for that letter to be in the word
-				if _, exists := seen[letter]; exists {
-					letterConditions[letter].Double = &falseVal
-				} else {
-					letterConditions[letter].Status = &falseVal
-				}
+		default:
+			// If we have already looked at the letter and the new is a 'b' that means there are no doubles,
+			// but could still be possible for that letter to be in the word
+			if _, exists := seen[letter]; exists {
+				letterConditions[letter].Double = &falseVal
+			} else {
+				letterConditions[letter].Status = &falseVal
+			}
 		}
 
 		seen[letter] = &trueVal
@@ -151,7 +152,7 @@ func GetLetterFrequency(wordList [][5]byte) [26][5]float64 {
 
 	totalWords := float64(len(wordList))
 	for i := 0; i < 26; i++ {
-		for j := 0; j < 5; j++{
+		for j := 0; j < 5; j++ {
 			letterFrequency[i][j] /= totalWords
 		}
 	}
@@ -192,7 +193,7 @@ func RankedWords(wordList [][5]byte, letterFrequency [26][5]float64) []WordScore
 
 
 func FilterWordList(wordList [][5]byte) [][5]byte {
-	filteredWords := make([][5]byte, 0, len(wordList))
+	filteredWords := make([][5]byte, 0, len(wordList)/4)
 
 	for _, word := range wordList {
 		// when the finalWord is being built we should skip any word which does not follow the skeleton
@@ -214,7 +215,7 @@ func FilterWordList(wordList [][5]byte) [][5]byte {
 		}
 
 		// The word does not contain one of the know letters in the word, so we should skip
-		if len(knownLetters) > 0 && !ContainsBytes(word, knownLetters) {
+		if len(knownLetters) > 0 && !InKnownLetters(word, knownLetters) {
 			continue
 		}
 

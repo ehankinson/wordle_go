@@ -1,15 +1,16 @@
 package solver
 
 import (
-	"os"
-	"fmt"
 	"bufio"
-	"slices"
-	"runtime"
+	"fmt"
+	"os"
 	"path/filepath"
+	"runtime"
+	"slices"
 )
 
 var validWordsPath = filepath.Join(getCurrentDir(), "..", "..", "..", "words", "all_valid_words.txt")
+
 
 
 func getCurrentDir() string {
@@ -19,7 +20,21 @@ func getCurrentDir() string {
 
 
 
-func ContainsBytes(word [5]byte, knownLetters []byte) bool {
+func HasCommonByte(word1 [5]byte, word2 [5]byte) bool {
+	for _, x := range word1 {
+		for _, y := range word2 {
+			if x == y {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+
+
+func InKnownLetters(word [5]byte, knownLetters []byte) bool {
 	for _, char := range word {
 		for _, knowLetter := range knownLetters {
 			if char == knowLetter {
@@ -33,9 +48,9 @@ func ContainsBytes(word [5]byte, knownLetters []byte) bool {
 
 
 
-func ContainsRune(word string, r rune) bool {
-	for _, char := range word {
-		if r == char {
+func ContainsByte(word [5]byte, b byte) bool {
+	for _, x := range word {
+		if x == b {
 			return true
 		}
 	}

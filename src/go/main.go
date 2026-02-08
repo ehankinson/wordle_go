@@ -16,20 +16,35 @@ func main() {
 	// Example of using the solver package
 	fmt.Println("\nDemonstrating solver package:")
 	words := solver.GetValidWords()
-	fmt.Printf("Loaded %d valid Wordle words\n", len(words))
-
-	letterFrequency := solver.GetLetterFrequency(words)
-	bestWord := solver.GetBestWord(words, letterFrequency)
-	fmt.Printf("Best word: %s\n", bestWord)
-	fmt.Println(len(letterFrequency))
 	
-	// Get a random word
-	// randomWord := solver.GetRandomWord(words)
-	// fmt.Printf("Random word: %s\n", randomWord)
+	start := time.Now()
+	entropyMap := solver.GetEntropyMap(words)
+	end := time.Now()
+	bestWord := solver.GetBestEntropyWord(entropyMap)
+	fmt.Printf("Time taken: %s\n", end.Sub(start))
+	fmt.Printf("Best word: %s\n", string(bestWord[:]))
 
-	startTime := time.Now()
-	patterns := solver.GetAllLetterPatterns()
-	elapsed := time.Since(startTime)
-	fmt.Println(len(patterns))
-	fmt.Printf("Time taken: %s\n", elapsed)
+	feedback1 := [5]byte{'y', 'y', 'b', 'y', 'b'}
+	words = solver.FilterWords(feedback1, bestWord, words)
+	entropyMap = solver.GetEntropyMap(words)
+	bestWord = solver.GetBestEntropyWord(entropyMap)
+	fmt.Printf("Best word: %s\n", string(bestWord[:]))
+
+	feedback2 := [5]byte{'b', 'b', 'y', 'b', 'b'}
+	words = solver.FilterWords(feedback2, bestWord, words)
+	entropyMap = solver.GetEntropyMap(words)
+	bestWord = solver.GetBestEntropyWord(entropyMap)
+	fmt.Printf("Best word: %s\n", string(bestWord[:]))
+
+	feedback3 := [5]byte{'b', 'g', 'b', 'b', 'y'}
+	words = solver.FilterWords(feedback3, bestWord, words)
+	entropyMap = solver.GetEntropyMap(words)
+	bestWord = solver.GetBestEntropyWord(entropyMap)
+	fmt.Printf("Best word: %s\n", string(bestWord[:]))
+
+	feedback4 := [5]byte{'b', 'y', 'y', 'y', 'b'}
+	words = solver.FilterWords(feedback4, bestWord, words)
+	entropyMap = solver.GetEntropyMap(words)
+	bestWord = solver.GetBestEntropyWord(entropyMap)
+	fmt.Printf("Best word: %s\n", string(bestWord[:]))
 }
