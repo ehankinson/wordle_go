@@ -82,6 +82,8 @@ func NYTWordValidator(finalWord string, guessedWord string) string {
 
 
 
+
+
 func UpdateLetterConditions(validationString string, guessedWord [5]byte) {
 	seen := make(map[byte]*bool)
 	validationBytes := []byte(validationString)
