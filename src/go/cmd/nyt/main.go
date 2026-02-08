@@ -68,10 +68,27 @@ func removeWord(wordList [][5]byte, word [5]byte) [][5]byte {
 
 
 
-func playSingleGame(reader *bufio.Reader) {
-	solver.ResetGameState()
-	wordList := solver.GetValidWords()
+func PlayEntropyGame(wordList [][5]byte) [5]byte{
+	if len(wordList) < 2 {
+		return wordList[0]
+	}
+	entropyMap := solver.GetEntropyMap(wordList)
+	bestWord := solver.GetBestEntropyWord(entropyMap)
+	return bestWord
+}
+
+
+
+func PlayLetterProbabilityGame(wordList [][5]byte) [5]byte {
 	letterFrequency := solver.GetLetterFrequency(wordList)
+	bestWord := solver.GetBestProbabilityWord(wordList, letterFrequency)
+	return bestWord
+}
+
+
+
+func playSingleGame(reader *bufio.Reader, mode string) {
+	wordList := solver.GetValidWords()
 
 	fmt.Println(ColorCyan + "\n=== Starting New Wordle Game ===" + ColorReset)
 	fmt.Println("Enter validation string: " + BgGreen + ColorWhite + " g " + ColorReset + " = green (correct), " + BgYellow + ColorBlack + " y " + ColorReset + " = yellow (wrong position), " + BgBlack + ColorWhite + " b " + ColorReset + " = black (not in word)")
@@ -82,10 +99,20 @@ func playSingleGame(reader *bufio.Reader) {
 		fmt.Printf(ColorPurple+"\n--- Attempt %d/6 ---\n"+ColorReset, attempt)
 		fmt.Printf(ColorBlue+"Words remaining: %d\n"+ColorReset, len(wordList))
 
+		if attempt == 5 {
+			fmt.Printf("Failed: Maximum attempts reached\n")
+		}
+
 		// Handle case where word doesn't exist
 		for {
-			bestWord := solver.GetBestWord(wordList, letterFrequency)
-			fmt.Printf(ColorCyan+"Suggested word: "+ColorWhite+"%s"+ColorReset+"\n", bestWord)
+			bestWord := [5]byte{}
+			if mode == "entropy" {
+				bestWord = PlayEntropyGame(wordList)
+			} else {
+				bestWord = PlayLetterProbabilityGame(wordList)
+			}
+
+			fmt.Printf(ColorCyan+"Suggested word: "+ColorWhite+"%s"+ColorReset+"\n", string(bestWord[:]))
 
 			fmt.Print("Enter validation (or 'skip'): ")
 			input, _ := reader.ReadString('\n')
@@ -94,7 +121,6 @@ func playSingleGame(reader *bufio.Reader) {
 			if input == "skip" {
 				fmt.Println("Removing word from dictionary...")
 				wordList = removeWord(wordList, bestWord)
-				letterFrequency = solver.GetLetterFrequency(wordList)
 				continue
 			}
 
@@ -120,10 +146,15 @@ func playSingleGame(reader *bufio.Reader) {
 			}
 
 			if valid {
-				fmt.Printf("Result: %s\n", displayColoredWord(string(bestWord[:]), input))
-				solver.UpdateLetterConditions(input, bestWord)
-				wordList = solver.FilterWordList(wordList)
-				letterFrequency = solver.GetLetterFrequency(wordList)
+				originalLength := len(wordList)
+
+				feedback := [5]byte{}
+				for i := 0; i < 5; i++ {
+					feedback[i] = input[i]
+				}
+
+				wordList = solver.FilterWords(feedback, bestWord, wordList)
+				fmt.Printf("UPDATED:%d\nHas been filtered by %d words", len(wordList), originalLength - len(wordList))
 				break
 			}
 		}
@@ -139,17 +170,20 @@ func playSingleGame(reader *bufio.Reader) {
 
 
 
-func playAutomatedGame() {
-	solver.ResetGameState()
+func playAutomatedGame(mode string) {
 	wordList := solver.GetValidWords()
-	letterFrequency := solver.GetLetterFrequency(wordList)
 
 	reader := bufio.NewReader(os.Stdin)
 
 	for attempt := 1; attempt <= 6; attempt++ {
 		// Handle case where word doesn't exist
 		for {
-			bestWord := solver.GetBestWord(wordList, letterFrequency)
+			bestWord := [5]byte{}
+			if mode == "entropy" {
+				bestWord = PlayEntropyGame(wordList)
+			} else {
+				bestWord = PlayLetterProbabilityGame(wordList)
+			}
 
 			// Output suggested word for Python to use
 			fmt.Printf("WORD:%s\n", string(bestWord[:]))
@@ -164,7 +198,6 @@ func playAutomatedGame() {
 
 			if input == "SKIP" {
 				wordList = removeWord(wordList, bestWord)
-				letterFrequency = solver.GetLetterFrequency(wordList)
 				continue
 			}
 
@@ -190,9 +223,12 @@ func playAutomatedGame() {
 			}
 
 			if valid {
-				solver.UpdateLetterConditions(input, bestWord)
-				wordList = solver.FilterWordList(wordList)
-				letterFrequency = solver.GetLetterFrequency(wordList)
+				feedback := [5]byte{}
+				for i := 0; i < 5; i++ {
+					feedback[i] = input[i]
+				}
+
+				wordList = solver.FilterWords(feedback, bestWord, wordList)
 				fmt.Printf("UPDATED:%d\n", len(wordList))
 				break
 			}
@@ -212,17 +248,19 @@ func playAutomatedGame() {
 func main() {
 	// Check for automated mode
 	if len(os.Args) > 1 && os.Args[1] == "--auto" {
-		playAutomatedGame()
+		mode := os.Args[2]
+		playAutomatedGame(mode)
 		return
 	}
 
 	// Original interactive mode
 	reader := bufio.NewReader(os.Stdin)
+	mode := os.Args[1]
 
 	fmt.Println(ColorPurple + "Welcome to the NYT Wordle Solver!" + ColorReset)
 
 	for {
-		playSingleGame(reader)
+		playSingleGame(reader, mode)
 
 		fmt.Print(ColorYellow + "\nWould you like to play another game? (y/n): " + ColorReset)
 		response, _ := reader.ReadString('\n')

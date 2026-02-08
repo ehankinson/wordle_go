@@ -4,11 +4,6 @@ import (
 	"math"
 )
 
-var finalWord = [5]byte{}
-var knownLetters = []byte{}
-var absentLetters = [23]byte{}
-
-
 func patterIndex(pattern [5]byte) int {
 	index := 0
 	for i := 0; i < 5; i++ {
@@ -86,51 +81,4 @@ func GetBestEntropyWord(entropyMap map[[5]byte]float64) [5]byte {
 	}
 
 	return bestWord
-}
-
-
-
-func FilterWords(feedback [5]byte, guess [5]byte, wordList [][5]byte) [][5]byte {
-	result := [][5]byte{}
-
-	for _, word := range wordList {
-
-		if !HasCommonByte(word, guess) {
-			result = append(result, word)
-			continue
-		}
-
-		skip := false
-		for i := 0; i < 5; i++ {
-			if feedback[i] == 'g' && word[i] != guess[i] {
-				skip = true
-				break
-			} else if feedback[i] == 'y' && (word[i] == guess[i] || !ContainsByte(word, guess[i])) {
-				skip = true
-				break
-			} else if feedback[i] == 'b' && ContainsByte(word, guess[i]) {
-				skip = true
-				break
-			}
-		}
-		if !skip {
-			result = append(result, word)
-		}
-	}
-
-	return result
-}
-
-
-
-func UpdateFinalWord(feedback [5]byte, guess [5]byte) {
-	for i := 0; i < 5; i++ {
-		if feedback[i] == 'g' {
-			finalWord[i] = guess[i]
-		} else if feedback[i] == 'y' {
-			knownLetters = append(knownLetters, guess[i])
-		} else if feedback[i] == 'b' {
-			absentLetters = append(absentLetters, guess[i])
-		}
-	}
 }

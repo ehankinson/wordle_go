@@ -1,12 +1,12 @@
 package solver
 
 import (
-	"bufio"
-	"fmt"
 	"os"
-	"path/filepath"
-	"runtime"
+	"fmt"
+	"bufio"
 	"slices"
+	"runtime"
+	"path/filepath"
 )
 
 var validWordsPath = filepath.Join(getCurrentDir(), "..", "..", "..", "words", "all_valid_words.txt")
@@ -78,7 +78,6 @@ func CountRunes(word string, r rune) int {
 }
 
 
-
 func GetValidWords() [][5]byte {
 	file, err := os.Open(validWordsPath)
 	if err != nil {
@@ -99,4 +98,52 @@ func GetValidWords() [][5]byte {
 	}
 
 	return wordList
+}
+
+
+
+func Pattern(answer [5]byte, guess [5]byte) [5]byte {
+	result := [5]byte{'b', 'b', 'b', 'b', 'b'}
+
+	var count [26]int
+	for i := 0; i < 5; i++ {
+		count[answer[i]-'a']++
+	}
+
+	for i := 0; i < 5; i++ {
+		if answer[i] == guess[i] {
+			result[i] = 'g'
+			count[answer[i]-'a']--
+		}
+	}
+
+	for i := 0; i < 5; i++ {
+		if result[i] == 'g' {
+			continue
+		}
+
+		letter := guess[i] - 'a'
+		if count[letter] > 0 {
+			result[i] = 'y'
+			count[letter]--
+		}
+	}
+
+	return result
+}
+
+
+
+func FilterWords(feedback [5]byte, guess [5]byte, wordList [][5]byte) [][5]byte {
+	results := [][5]byte{}
+
+	for _, word := range wordList {
+
+		pattern := Pattern(word, guess)
+		if pattern == feedback {
+			results = append(results, word)
+		}
+	}
+
+	return results
 }

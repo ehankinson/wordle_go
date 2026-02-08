@@ -72,8 +72,12 @@ class WordleDriver(ABC):
         """Start the Go solver process"""
         try:
             solver_path = os.path.join(os.path.dirname(__file__), '..', '..', 'bin', 'wordle_solver')
+            mode = os.environ.get("WORDLE_MODE", "").strip().lower()
+            if mode not in ("entropy", "probability"):
+                print("Error: WORDLE_MODE must be 'entropy' or 'probability'")
+                return False
             self.go_process = subprocess.Popen(
-                [solver_path, '--auto'],
+                [solver_path, '--auto', mode],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -330,6 +334,7 @@ class WordleDriver(ABC):
         current_word = first_response[5:]
         print(f"Starting with: '{current_word}'")
         row = 0
+        solved = False
         
         while current_word and row < 6:
             print(f"\nAttempt {row + 1}: '{current_word}'")
@@ -351,6 +356,7 @@ class WordleDriver(ABC):
             
             # Check if solved
             if self.game_won(result, row):
+                solved = True
                 break
             
             # Get next word
@@ -362,11 +368,6 @@ class WordleDriver(ABC):
             row += 1
         
         if row >= 6 and result != "ggggg":
-            if results is not None:
-                results["games_played"] += 1
-                results["wins"] += 1
-                results[row + 1] += 1
-
             print("Game over - max attempts reached")
-        
-        return True
+
+        return solved

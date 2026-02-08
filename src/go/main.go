@@ -26,25 +26,27 @@ func main() {
 
 	feedback1 := [5]byte{'y', 'y', 'b', 'y', 'b'}
 	words = solver.FilterWords(feedback1, bestWord, words)
-	entropyMap = solver.GetEntropyMap(words)
-	bestWord = solver.GetBestEntropyWord(entropyMap)
-	fmt.Printf("Best word: %s\n", string(bestWord[:]))
+	fmt.Printf("Words remaining: %d\n", len(words))
+	// words = solver.FilterWords(feedback1, bestWord, words)
+	// entropyMap = solver.GetEntropyMap(words)
+	// bestWord = solver.GetBestEntropyWord(entropyMap)
+	// fmt.Printf("Best word: %s\n", string(bestWord[:]))
 
-	feedback2 := [5]byte{'b', 'b', 'y', 'b', 'b'}
-	words = solver.FilterWords(feedback2, bestWord, words)
-	entropyMap = solver.GetEntropyMap(words)
-	bestWord = solver.GetBestEntropyWord(entropyMap)
-	fmt.Printf("Best word: %s\n", string(bestWord[:]))
+	// feedback2 := [5]byte{'b', 'b', 'y', 'b', 'b'}
+	// words = solver.FilterWords(feedback2, bestWord, words)
+	// entropyMap = solver.GetEntropyMap(words)
+	// bestWord = solver.GetBestEntropyWord(entropyMap)
+	// fmt.Printf("Best word: %s\n", string(bestWord[:]))
 
-	feedback3 := [5]byte{'b', 'g', 'b', 'b', 'y'}
-	words = solver.FilterWords(feedback3, bestWord, words)
-	entropyMap = solver.GetEntropyMap(words)
-	bestWord = solver.GetBestEntropyWord(entropyMap)
-	fmt.Printf("Best word: %s\n", string(bestWord[:]))
+	// feedback3 := [5]byte{'b', 'g', 'b', 'b', 'y'}
+	// words = solver.FilterWords(feedback3, bestWord, words)
+	// entropyMap = solver.GetEntropyMap(words)
+	// bestWord = solver.GetBestEntropyWord(entropyMap)
+	// fmt.Printf("Best word: %s\n", string(bestWord[:]))
 
-	feedback4 := [5]byte{'b', 'y', 'y', 'y', 'b'}
-	words = solver.FilterWords(feedback4, bestWord, words)
-	entropyMap = solver.GetEntropyMap(words)
-	bestWord = solver.GetBestEntropyWord(entropyMap)
-	fmt.Printf("Best word: %s\n", string(bestWord[:]))
+	// feedback4 := [5]byte{'b', 'y', 'y', 'y', 'b'}
+	// words = solver.FilterWords(feedback4, bestWord, words)
+	// entropyMap = solver.GetEntropyMap(words)
+	// bestWord = solver.GetBestEntropyWord(entropyMap)
+	// fmt.Printf("Best word: %s\n", string(bestWord[:]))
 }

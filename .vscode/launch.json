@@ -33,7 +33,8 @@
             "mode": "debug",
             "program": "${workspaceFolder}/src/go/cmd/nyt",
             "cwd": "${workspaceFolder}/src/go",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "args": ["entropy"]
         }
     ]
 }

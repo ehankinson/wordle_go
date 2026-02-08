@@ -2,7 +2,38 @@
 
 # Run the Wordle web player
 
-echo "Starting Wordle web player..."
+usage() {
+    echo "Usage: $0 --entropy|--probability"
+}
+
+mode=""
+for arg in "$@"; do
+    case "$arg" in
+        --entropy)
+            mode="entropy"
+            ;;
+        --probability)
+            mode="probability"
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $arg"
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+if [ -z "$mode" ]; then
+    echo "Error: you must provide --entropy or --probability"
+    usage
+    exit 1
+fi
+
+echo "Starting Wordle web player with mode: $mode..."
 
 # Initialize conda for this shell session
 eval "$(conda shell.bash hook)"
@@ -50,6 +81,6 @@ mkdir -p bin
 (cd src/go && go build -o ../../bin/wordle_solver ./cmd/nyt)
 
 # Run the Wordle web player
-python3 src/python/wordle.py
+WORDLE_MODE="$mode" python3 src/python/wordle.py
 
 echo "Done!"
